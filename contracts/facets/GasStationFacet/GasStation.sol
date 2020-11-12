@@ -1,0 +1,68 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.7.4;
+
+import "./LibSignature.sol";
+import "./LibGasStationStorage.sol";
+import "../../interfaces/IGasStation.sol";
+import "diamond-2/contracts/libraries/LibDiamond.sol";
+
+contract GasStationFacet is IGasStation {
+    function initialize(address _admin) external override {
+        require(msg.sender == LibDiamond.diamondStorage().contractOwner);
+        LibGasStationStorage.gsStorage().admin = _admin;
+    }
+
+    function getAdmin() external override view returns (address) {
+        return LibGasStationStorage.gsStorage().admin;
+    }
+
+    /**
+     * @dev Get the latest nonce of a given signer
+     * @param _signer Address of the signer
+     */
+    function getLatestNonce(address _signer)
+        external
+        override
+        view
+        returns (uint256)
+    {
+        return LibGasStationStorage.gsStorage().signerNonce[_signer];
+    }
+
+    /**
+     * @dev Validate a given nonce, reverts if nonce is not right
+     * @param _signer Address of the signer
+     * @param _nonce Nonce of the signer
+     */
+    function validateNonce(address _signer, uint256 _nonce) private {
+        LibGasStationStorage.GSStorage storage s = LibGasStationStorage
+            .gsStorage();
+
+        require(s.signerNonce[_signer] + 1 == _nonce, "INVALID_NONCE");
+        s.signerNonce[_signer] = _nonce;
+    }
+
+    // Multinonce? https://github.com/PISAresearch/metamask-comp#multinonce
+    function call(
+        bytes memory _call,
+        address _to,
+        uint256 _nonce,
+        bytes memory _sig
+    ) external override {
+        require(
+            msg.sender == LibGasStationStorage.gsStorage().admin,
+            "ONLY_ADMIN"
+        );
+
+        bytes32 message = LibSignature.prefixed(
+            keccak256(abi.encodePacked(_call, _to, _nonce))
+        );
+        address signer = LibSignature.recoverSigner(message, _sig);
+
+        validateNonce(signer, _nonce);
+        (bool success, bytes memory returnData) = _to.call(
+            abi.encodePacked(_call, signer)
+        );
+        emit Result(success, returnData);
+    }
+}
