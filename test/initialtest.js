@@ -23,14 +23,16 @@ describe("PieFactoryContract", function() {
     it("Test",  async() => {
         [owner, voter] = await ethers.getSigners();
         Diamond = await ethers.getContractFactory("Diamond")
-        TestFacet = await ethers.getContractFactory("TestFacet")
+        AssetPoolFacet = await ethers.getContractFactory("AssetPoolFacet")
         DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet")
         DiamondLoupeFacet = await ethers.getContractFactory("DiamondLoupeFacet")
         OwnershipFacet = await ethers.getContractFactory("OwnershipFacet")
         GasStationFacet = await ethers.getContractFactory("GasStationFacet")
 
+        AssetPoolFactory = await ethers.getContractFactory("AssetPoolFactory")
 
-        testfacet = await TestFacet.deploy();
+
+        assetPoolFacet = await AssetPoolFacet.deploy();
         diamondCutFacet = await DiamondCutFacet.deploy();
         diamondLoupeFacet = await DiamondLoupeFacet.deploy();
         ownershipFacet = await OwnershipFacet.deploy();
@@ -39,8 +41,8 @@ describe("PieFactoryContract", function() {
         diamondCut = [
             {
                 action: FacetCutAction.Add,
-                facetAddress: testfacet.address,
-                functionSelectors: getSelectors(testfacet)
+                facetAddress: assetPoolFacet.address,
+                functionSelectors: getSelectors(assetPoolFacet)
             },
             {
                 action: FacetCutAction.Add,
@@ -63,18 +65,19 @@ describe("PieFactoryContract", function() {
                 functionSelectors: getSelectors(gasStationFacet)
             }
         ]
+        assetPoolFactory = await AssetPoolFactory.deploy(diamondCut);
+        tx = await assetPoolFactory.deployAssetPool(await owner.getAddress());
+        tx = await tx.wait()
+        diamond = tx.events[tx.events.length - 1].args.assetPool
 
+        solution = await ethers.getContractAt("IAssetPoolFacet", diamond);
 
-        diamond = await Diamond.deploy(diamondCut, await owner.getAddress());
-        solution = await ethers.getContractAt("ITestFacet", diamond.address);
-
-        expect(await solution.getAdmin()).to.eq(ethers.constants.AddressZero);
         await solution.initialize(await owner.getAddress());
         expect(await solution.getAdmin()).to.eq(await owner.getAddress());
 
         tx = await solution.test();
         tx = await tx.wait();
-        let ev = await TestFacet.interface.parseLog(tx.logs[0])
+        let ev = await AssetPoolFacet.interface.parseLog(tx.logs[0])
         expect(ev.args.user).to.eq(await owner.getAddress());
 
 
@@ -86,7 +89,7 @@ describe("PieFactoryContract", function() {
         const sig = await voter.signMessage(ethers.utils.arrayify(hash))
         tx = await solution.call(call, nonce, sig);
         tx = await tx.wait()
-        ev = await TestFacet.interface.parseLog(tx.logs[0])
+        ev = await AssetPoolFacet.interface.parseLog(tx.logs[0])
         expect(ev.args.user).to.eq(await voter.getAddress())
 
     })

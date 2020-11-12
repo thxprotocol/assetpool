@@ -7,7 +7,7 @@ import "./IGasStation.sol";
 pragma solidity ^0.7.4;
 pragma experimental ABIEncoderV2;
 
-interface ITestFacet is IERC173, IDiamondLoupe, IDiamondCut, IGasStation {
+interface IAssetPoolFacet is IERC173, IDiamondLoupe, IDiamondCut, IGasStation {
     event Address(address meme);
 
     function test() external;
