@@ -45,7 +45,6 @@ contract GasStationFacet is IGasStation {
     // Multinonce? https://github.com/PISAresearch/metamask-comp#multinonce
     function call(
         bytes memory _call,
-        address _to,
         uint256 _nonce,
         bytes memory _sig
     ) external override {
@@ -55,12 +54,12 @@ contract GasStationFacet is IGasStation {
         );
 
         bytes32 message = LibSignature.prefixed(
-            keccak256(abi.encodePacked(_call, _to, _nonce))
+            keccak256(abi.encodePacked(_call, _nonce))
         );
         address signer = LibSignature.recoverSigner(message, _sig);
 
         validateNonce(signer, _nonce);
-        (bool success, bytes memory returnData) = _to.call(
+        (bool success, bytes memory returnData) = address(this).call(
             abi.encodePacked(_call, signer)
         );
         emit Result(success, returnData);

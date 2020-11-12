@@ -12,7 +12,6 @@ interface IGasStation {
 
     function call(
         bytes calldata _call,
-        address _to,
         uint256 _nonce,
         bytes memory _sig
     ) external;

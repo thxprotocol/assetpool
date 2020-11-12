@@ -82,9 +82,9 @@ describe("PieFactoryContract", function() {
         nonce = await solution.getLatestNonce(voter.getAddress());
         nonce = parseInt(nonce) + 1;
         const call = solution.interface.encodeFunctionData("test", []);
-        const hash = web3.utils.soliditySha3(call, solution.address, nonce)
+        const hash = web3.utils.soliditySha3(call, nonce)
         const sig = await voter.signMessage(ethers.utils.arrayify(hash))
-        tx = await solution.call(call, solution.address, nonce, sig);
+        tx = await solution.call(call, nonce, sig);
         tx = await tx.wait()
         ev = await TestFacet.interface.parseLog(tx.logs[0])
         expect(ev.args.user).to.eq(await voter.getAddress())
