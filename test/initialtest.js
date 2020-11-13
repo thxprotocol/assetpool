@@ -19,7 +19,7 @@ function getSelectors(contract) {
 }
 
 
-describe("PieFactoryContract", function() {
+describe("Happyflow", function() {
     it("Test",  async() => {
         [owner, voter] = await ethers.getSigners();
         Diamond = await ethers.getContractFactory("Diamond")

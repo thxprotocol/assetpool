@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.7.4;
 
 import "../GasStationFacet/RelayReceiver.sol";

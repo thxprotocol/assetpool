@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Apache-2.0
 import "diamond-2/contracts/interfaces/IERC173.sol";
 import "diamond-2/contracts/interfaces/IDiamondLoupe.sol";
 import "diamond-2/contracts/interfaces/IDiamondCut.sol";
