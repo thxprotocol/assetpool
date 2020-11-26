@@ -11,4 +11,8 @@ interface IAssetPoolFacet is IERC173, IDiamondLoupe, IDiamondCut, IGasStation {
     event Address(address meme);
 
     function test() external;
+
+    function setMeme(uint256 _id, uint256 _data) external;
+
+    function getMeme(uint256 _id) external view returns (uint256);
 }

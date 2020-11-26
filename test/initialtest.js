@@ -20,14 +20,14 @@ function getSelectors(contract) {
 
 
 describe("Happyflow", function() {
-    it("Test",  async() => {
+    beforeEach(async function () {
         [owner, voter] = await ethers.getSigners();
-        Diamond = await ethers.getContractFactory("Diamond")
         AssetPoolFacet = await ethers.getContractFactory("AssetPoolFacet")
         DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet")
         DiamondLoupeFacet = await ethers.getContractFactory("DiamondLoupeFacet")
         OwnershipFacet = await ethers.getContractFactory("OwnershipFacet")
         GasStationFacet = await ethers.getContractFactory("GasStationFacet")
+        RewardPollFacet = await ethers.getContractFactory("RewardPollFacet")
 
         AssetPoolFactory = await ethers.getContractFactory("AssetPoolFactory")
 
@@ -37,6 +37,7 @@ describe("Happyflow", function() {
         diamondLoupeFacet = await DiamondLoupeFacet.deploy();
         ownershipFacet = await OwnershipFacet.deploy();
         gasStationFacet = await GasStationFacet.deploy();
+        rewardPollFacet = await RewardPollFacet.deploy();
 
         diamondCut = [
             {
@@ -63,6 +64,11 @@ describe("Happyflow", function() {
                 action: FacetCutAction.Add,
                 facetAddress: gasStationFacet.address,
                 functionSelectors: getSelectors(gasStationFacet)
+            },
+            {
+                action: FacetCutAction.Add,
+                facetAddress: rewardPollFacet.address,
+                functionSelectors: getSelectors(rewardPollFacet)
             }
         ]
         assetPoolFactory = await AssetPoolFactory.deploy(diamondCut);
@@ -71,16 +77,31 @@ describe("Happyflow", function() {
         diamond = tx.events[tx.events.length - 1].args.assetPool
 
         solution = await ethers.getContractAt("IAssetPoolFacet", diamond);
+    })
 
+    it("test storage" , async() => {
+        await solution.setMeme(1, 5);
+        expect(await solution.getMeme(1)).to.be.eq(5)
+
+        expect(await solution.getMeme(0)).to.be.eq(0)
+        await solution.setMeme(0, 500);
+        expect(await solution.getMeme(0)).to.be.eq(500)
+        await solution.setMeme(0, 542);
+        expect(await solution.getMeme(0)).to.be.eq(542)
+    })
+
+    it("Normal", async() => {
         await solution.initialize(await owner.getAddress());
         expect(await solution.getAdmin()).to.eq(await owner.getAddress());
 
-        tx = await solution.test();
+        tx = await solution.test()
         tx = await tx.wait();
         let ev = await AssetPoolFacet.interface.parseLog(tx.logs[0])
         expect(ev.args.user).to.eq(await owner.getAddress());
+    })
 
-
+    it("Signed",  async() => {
+        await solution.initialize(await owner.getAddress());
 
         nonce = await solution.getLatestNonce(voter.getAddress());
         nonce = parseInt(nonce) + 1;
@@ -89,7 +110,9 @@ describe("Happyflow", function() {
         const sig = await voter.signMessage(ethers.utils.arrayify(hash))
         tx = await solution.call(call, nonce, sig);
         tx = await tx.wait()
+
         ev = await AssetPoolFacet.interface.parseLog(tx.logs[0])
+
         expect(ev.args.user).to.eq(await voter.getAddress())
 
     })

@@ -2,7 +2,7 @@
 pragma solidity ^0.7.1;
 pragma experimental ABIEncoderV2;
 
-import "diamond-2/contracts/Diamond.sol";
+import "../CustomDiamond.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../interfaces/IAssetPoolFacet.sol";
@@ -34,7 +34,7 @@ contract AssetPoolFactory is Ownable {
     }
 
     function deployAssetPool(address api) external {
-        Diamond d = new Diamond(defaultCut, address(this));
+        CustomDiamond d = new CustomDiamond(defaultCut, address(this));
         IAssetPoolFacet assetPool = IAssetPoolFacet(address(d));
 
         // initialize gasstation
