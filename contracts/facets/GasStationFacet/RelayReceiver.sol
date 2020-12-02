@@ -7,7 +7,7 @@ import "hardhat/console.sol";
 // Copied from https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/GSN/GSNRecipient.sol
 // But kept minimalist.
 contract RelayReceiver {
-    function _msgSender() internal view returns (address payable result) {
+    function _msgSender() internal pure returns (address payable result) {
         // TODO make it configurable
         // e.g.
         // signer: bool

@@ -28,6 +28,7 @@ describe("Happyflow", function() {
         OwnershipFacet = await ethers.getContractFactory("OwnershipFacet")
         GasStationFacet = await ethers.getContractFactory("GasStationFacet")
         RewardPollFacet = await ethers.getContractFactory("RewardPollFacet")
+        PollProxyFacet = await ethers.getContractFactory("PollProxyFacet")
 
         AssetPoolFactory = await ethers.getContractFactory("AssetPoolFactory")
 
@@ -38,6 +39,7 @@ describe("Happyflow", function() {
         ownershipFacet = await OwnershipFacet.deploy();
         gasStationFacet = await GasStationFacet.deploy();
         rewardPollFacet = await RewardPollFacet.deploy();
+        pollProxyFacet = await PollProxyFacet.deploy();
 
         diamondCut = [
             {
@@ -69,6 +71,11 @@ describe("Happyflow", function() {
                 action: FacetCutAction.Add,
                 facetAddress: rewardPollFacet.address,
                 functionSelectors: getSelectors(rewardPollFacet)
+            },
+            {
+                action: FacetCutAction.Add,
+                facetAddress: pollProxyFacet.address,
+                functionSelectors: getSelectors(pollProxyFacet)
             }
         ]
         assetPoolFactory = await AssetPoolFactory.deploy(diamondCut);
@@ -116,4 +123,16 @@ describe("Happyflow", function() {
         expect(ev.args.user).to.eq(await voter.getAddress())
 
     })
+
+    // it("Test vote proxy",  async() => {
+    //     await solution.initialize(await owner.getAddress());
+    //     nonce = await solution.getLatestNonce(voter.getAddress());
+    //     nonce = parseInt(nonce) + 1;
+
+    //     tx = await solution.setMemeYes(1, 555);
+    //     tx = await tx.wait()
+
+    //     const res2 = await solution.getMemeYes(1);
+    //     console.error("b", res2.toString())
+    // })
 })

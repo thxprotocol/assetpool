@@ -6,10 +6,9 @@ struct RPStorage {
     uint256 data;
   }
 
-  function rpStorage(uint256 _id) internal pure returns (RPStorage storage bs) {
-    bytes32 position = keccak256(abi.encode(_id));
+  function rpStorage(bytes32 _pos) internal pure returns (RPStorage storage bs) {
     assembly {
-      bs.slot := position
+      bs.slot := _pos
     }
   }
 }

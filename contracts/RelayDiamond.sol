@@ -15,7 +15,7 @@ import "diamond-2/contracts/interfaces/IDiamondCut.sol";
 import "diamond-2/contracts/interfaces/IERC173.sol";
 import "diamond-2/contracts/interfaces/IERC165.sol";
 
-contract CustomDiamond {
+contract RelayDiamond {
     constructor(IDiamondCut.FacetCut[] memory _diamondCut, address _owner) payable {
         LibDiamond.diamondCut(_diamondCut, address(0), new bytes(0));
         LibDiamond.setContractOwner(_owner);
