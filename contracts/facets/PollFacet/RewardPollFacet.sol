@@ -6,13 +6,17 @@ import "hardhat/console.sol";
 import "../GasStationFacet/RelayReceiver.sol";
 
 contract RewardPollFacet is RelayReceiver {
+    event Sender(address sender);
+
     function _setMeme(uint256 _data) public {
         bytes32 pointer = rps();
+        emit Sender(_msgSender());
         LibRewardPollStorage.rpStorage(pointer).data = _data;
     }
 
     function _getMeme() public view returns (uint256) {
         uint256 d = LibRewardPollStorage.rpStorage(rps()).data;
+        //emit Sender(_msgSender());
         bytes32 pointer = rps();
         return d;
     }

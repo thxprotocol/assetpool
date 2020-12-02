@@ -96,6 +96,19 @@ describe("Happyflow", function() {
         await solution.setMeme(0, 542);
         expect(await solution.getMeme(0)).to.be.eq(542)
     })
+    it("test storage signer" , async() => {
+        nonce = await solution.getLatestNonce(voter.getAddress());
+        nonce = parseInt(nonce) + 1;
+        const call = solution.interface.encodeFunctionData("setMeme", [1, 5]);
+        const hash = web3.utils.soliditySha3(call, nonce)
+        const sig = await voter.signMessage(ethers.utils.arrayify(hash))
+        tx = await solution.call(call, nonce, sig);
+        tx = await tx.wait()
+
+        ev = await RewardPollFacet.interface.parseLog(tx.logs[0])
+        expect(ev.args.sender).to.eq(await voter.getAddress())
+    })
+
 
     it("Normal", async() => {
         await solution.initialize(await owner.getAddress());
@@ -123,16 +136,4 @@ describe("Happyflow", function() {
         expect(ev.args.user).to.eq(await voter.getAddress())
 
     })
-
-    // it("Test vote proxy",  async() => {
-    //     await solution.initialize(await owner.getAddress());
-    //     nonce = await solution.getLatestNonce(voter.getAddress());
-    //     nonce = parseInt(nonce) + 1;
-
-    //     tx = await solution.setMemeYes(1, 555);
-    //     tx = await tx.wait()
-
-    //     const res2 = await solution.getMemeYes(1);
-    //     console.error("b", res2.toString())
-    // })
 })
