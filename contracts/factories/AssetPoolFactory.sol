@@ -33,12 +33,13 @@ contract AssetPoolFactory is Ownable {
         defaultCut.push(_facet);
     }
 
-    function deployAssetPool(address api) external {
+    function deployAssetPool(address _api, address _owner, address _token) external {
         RelayDiamond d = new RelayDiamond(defaultCut, address(this));
         IAssetPoolFacet assetPool = IAssetPoolFacet(address(d));
 
         // initialize gasstation
-        assetPool.initialize(api);
+        assetPool.initializeGasStation(_api);
+        assetPool.initializeAssetPool(_owner, _token);
         assetPool.transferOwnership(defaultController);
         emit AssetPoolDeployed(address(d));
     }

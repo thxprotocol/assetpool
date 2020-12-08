@@ -7,7 +7,7 @@ import "../../interfaces/IGasStation.sol";
 import "diamond-2/contracts/libraries/LibDiamond.sol";
 
 contract GasStationFacet is IGasStation {
-    function initialize(address _admin) external override {
+    function initializeGasStation(address _admin) external override {
         require(msg.sender == LibDiamond.diamondStorage().contractOwner);
         LibGasStationStorage.gsStorage().admin = _admin;
     }

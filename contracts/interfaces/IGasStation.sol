@@ -4,7 +4,7 @@ pragma solidity ^0.7.4;
 interface IGasStation {
     event Result(bool success, bytes data);
 
-    function initialize(address _admin) external;
+    function initializeGasStation(address _admin) external;
 
     function getAdmin() external view returns (address);
 

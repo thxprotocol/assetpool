@@ -8,21 +8,25 @@ pragma solidity ^0.7.4;
 pragma experimental ABIEncoderV2;
 
 interface IAssetPoolFacet is IERC173, IDiamondLoupe, IDiamondCut, IGasStation {
-    event Address(address meme);
+    function initializeAssetPool(address _owner, address _tokenAddress)
+        external;
 
-    function test() external;
+    function getToken() external view returns (address);
 
-    function getMeme(uint256 _id) external view returns (uint256);
+    // Roles
+    function getOwner() external view returns (address);
 
-    function setMeme(uint256 _id, uint256 _data) external;
+    function removeManager(address _account) external;
 
-   // function setMeme(uint256 _data) external;
+    function isManager(address _account) external view returns (bool);
 
-  // function getMeme() external view returns (uint256);
+    function addManager(address _account) external;
 
-    function callContract(uint256 _id, bytes memory _call) external;
+    function removeMember(address _account) external;
 
-    function viewContract(uint256 _id, bytes memory _call) external view;
+    function isMember(address _account) external view returns (bool);
 
-    function contractVote() external;
+    function addMember(address _account) external;
+
+    function __Roles_init(address _owner) external;
 }
