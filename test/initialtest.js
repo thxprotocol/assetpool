@@ -76,6 +76,7 @@ describe("Happyflow", function() {
                 functionSelectors: getSelectors(pollProxyFacet)
             }
         ]
+        //console.error(diamondCut)
         // all = []
         // for (facet in diamondCut) {
         //     for (func in diamondCut[facet].functionSelectors) {
@@ -102,5 +103,14 @@ describe("Happyflow", function() {
     it("test storage" , async() => {
         expect(await solution.getOwner()).to.eq(await owner.getAddress())
         expect(await solution.getToken()).to.eq(await owner.getAddress())
+    })
+    it("test reward poll" , async() => {
+        tx = await solution.addReward(100, 200);
+        tx = tx.wait()
+        const rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber)).timestamp;
+
+        expect(await solution.getEndTime(0)).to.eq(rewardTimestamp);
+        expect(await solution.getWithdrawAmount(0)).to.eq(100);
+        expect(await solution.getWithdrawDuration(0)).to.eq(200);
     })
 })

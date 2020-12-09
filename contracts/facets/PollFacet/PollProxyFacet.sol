@@ -9,24 +9,15 @@ import "hardhat/console.sol";
 contract PollProxyFacet is RelayReceiver {
     event Data(bytes32 pos);
 
-    function getMeme(uint256 _id) public view returns (uint256) {
-        bytes32 position = keccak256(abi.encode(_id));
-        bytes4 sig = bytes4(keccak256("_getMeme()"));
-        bytes memory _call = abi.encodeWithSelector(sig);
-        (bool success, bytes memory data) = address(this).staticcall(
-            abi.encodePacked(_call, position, _msgSender())
-        );
-        require(success, "fail");
-        return abi.decode(data, (uint256));
+    function getEndTime(uint256 _id) public view returns (uint256) {
+        return LibRewardPollStorage.rpStorageId(_id).endtime;
     }
 
-    function setMeme(uint256 _id, uint256 _data) public {
-        bytes32 position = keccak256(abi.encode(_id));
-        bytes4 sig = bytes4(keccak256("_setMeme(uint256)"));
-        bytes memory _call = abi.encodeWithSelector(sig, _data);
-        (bool success, bytes memory data) = address(this).call(
-            abi.encodePacked(_call, position, _msgSender())
-        );
-        require(success, "fail");
+    function getWithdrawAmount(uint256 _id) public view returns (uint256) {
+        return LibRewardPollStorage.rpStorageId(_id).withdrawAmount;
+    }
+
+    function getWithdrawDuration(uint256 _id) public view returns (uint256) {
+        return LibRewardPollStorage.rpStorageId(_id).withdrawDuration;
     }
 }

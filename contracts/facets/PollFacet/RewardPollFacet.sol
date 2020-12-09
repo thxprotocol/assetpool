@@ -8,20 +8,10 @@ import "../GasStationFacet/RelayReceiver.sol";
 contract RewardPollFacet is RelayReceiver {
     event Sender(address sender);
 
-    function _setMeme(uint256 _data) public {
-        bytes32 pointer = rps();
-        emit Sender(_msgSender());
-        LibRewardPollStorage.rpStorage(pointer).data = _data;
-    }
+    // needed for tests to run
+    function test() public {}
 
-    function _getMeme() public view returns (uint256) {
-        uint256 d = LibRewardPollStorage.rpStorage(rps()).data;
-        //emit Sender(_msgSender());
-        bytes32 pointer = rps();
-        return d;
-    }
-
-    function rps() internal view returns (bytes32 rt) {
+    function rps() internal pure returns (bytes32 rt) {
         // These fields are not accessible from assembly
         bytes memory array = msg.data;
         // minus address space

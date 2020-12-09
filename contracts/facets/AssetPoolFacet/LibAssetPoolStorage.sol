@@ -13,11 +13,24 @@ library LibAssetPoolStorage {
         address owner;
         IERC20 token;
         mapping(bytes32 => RoleData) roles;
+
+        uint256 proposeWithdrawPollDuration;
+        uint256 rewardPollDuration;
+        Reward[] rewards;
     }
 
     struct RoleData {
         EnumerableSet.AddressSet members;
         bytes32 adminRole;
+    }
+
+    enum RewardState { Disabled, Enabled }
+
+    struct Reward {
+        uint256 id;
+        uint256 withdrawAmount;
+        uint256 withdrawDuration;
+        RewardState state;
     }
 
     function apStorage() internal pure returns (APstorage storage bs) {

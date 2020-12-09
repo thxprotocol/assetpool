@@ -3,15 +3,25 @@ import "diamond-2/contracts/interfaces/IERC173.sol";
 import "diamond-2/contracts/interfaces/IDiamondLoupe.sol";
 import "diamond-2/contracts/interfaces/IDiamondCut.sol";
 import "./IGasStation.sol";
+import "./IRewardPoll.sol";
 
 pragma solidity ^0.7.4;
 pragma experimental ABIEncoderV2;
 
-interface IAssetPoolFacet is IERC173, IDiamondLoupe, IDiamondCut, IGasStation {
+interface IAssetPoolFacet is
+    IERC173,
+    IDiamondLoupe,
+    IDiamondCut,
+    IGasStation,
+    IRewardPoll
+{
     function initializeAssetPool(address _owner, address _tokenAddress)
         external;
 
     function getToken() external view returns (address);
+
+    function addReward(uint256 _withdrawAmount, uint256 _withdrawDuration)
+        external;
 
     // Roles
     function getOwner() external view returns (address);
