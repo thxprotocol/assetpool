@@ -5,12 +5,16 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "diamond-2/contracts/libraries/LibDiamond.sol";
 import "../PollFacet/LibRewardPollStorage.sol";
 import "./Roles.sol";
+import "../../interfaces/IAssetPool.sol";
 
-contract AssetPoolFacet is Roles {
+contract AssetPoolFacet is IAssetPool, Roles {
     uint256 constant ENABLE_REWARD = 2**250;
     uint256 constant DISABLE_REWARD = 2**251;
 
-    function initializeAssetPool(address _owner, address _tokenAddress) public {
+    function initializeAssetPool(address _owner, address _tokenAddress)
+        public
+        override
+    {
         // TODO, decide if reinitialize should be possible
         require(msg.sender == LibDiamond.diamondStorage().contractOwner);
 
@@ -22,7 +26,7 @@ contract AssetPoolFacet is Roles {
         s.token = IERC20(_tokenAddress);
     }
 
-    function getToken() public view returns (address) {
+    function getToken() public override view returns (address) {
         return address(LibAssetPoolStorage.apStorage().token);
     }
 
@@ -32,12 +36,18 @@ contract AssetPoolFacet is Roles {
      */
     function setProposeWithdrawPollDuration(uint256 _duration)
         public
+        override
         onlyManager
     {
         LibAssetPoolStorage.apStorage().proposeWithdrawPollDuration = _duration;
     }
 
-    function getProposeWithdrawPollDuration() public view returns (uint256) {
+    function getProposeWithdrawPollDuration()
+        public
+        override
+        view
+        returns (uint256)
+    {
         return LibAssetPoolStorage.apStorage().proposeWithdrawPollDuration;
     }
 
@@ -45,11 +55,15 @@ contract AssetPoolFacet is Roles {
      * @dev Set the reward poll duration
      * @param _duration Duration in seconds
      */
-    function setRewardPollDuration(uint256 _duration) public onlyManager {
+    function setRewardPollDuration(uint256 _duration)
+        public
+        override
+        onlyManager
+    {
         LibAssetPoolStorage.apStorage().rewardPollDuration = _duration;
     }
 
-    function getRewardPollDuration() public view returns (uint256) {
+    function getRewardPollDuration() public override view returns (uint256) {
         return LibAssetPoolStorage.apStorage().rewardPollDuration;
     }
 
@@ -60,6 +74,7 @@ contract AssetPoolFacet is Roles {
      */
     function addReward(uint256 _withdrawAmount, uint256 _withdrawDuration)
         public
+        override
         onlyOwner
     {
         // TODO allow reward 0?

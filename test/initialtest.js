@@ -97,7 +97,7 @@ describe("Happyflow", function() {
         tx = await tx.wait()
         diamond = tx.events[tx.events.length - 1].args.assetPool
 
-        solution = await ethers.getContractAt("IAssetPoolFacet", diamond);
+        solution = await ethers.getContractAt("ISolution", diamond);
     })
 
     it("test storage" , async() => {

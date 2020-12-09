@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 import "../RelayDiamond.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../interfaces/IAssetPoolFacet.sol";
+import "../interfaces/ISolution.sol";
 
 contract AssetPoolFactory is Ownable {
 
@@ -35,7 +35,7 @@ contract AssetPoolFactory is Ownable {
 
     function deployAssetPool(address _api, address _owner, address _token) external {
         RelayDiamond d = new RelayDiamond(defaultCut, address(this));
-        IAssetPoolFacet assetPool = IAssetPoolFacet(address(d));
+        ISolution assetPool = ISolution(address(d));
 
         // initialize gasstation
         assetPool.initializeGasStation(_api);
