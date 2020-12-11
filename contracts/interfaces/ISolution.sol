@@ -4,6 +4,7 @@ import "diamond-2/contracts/interfaces/IDiamondLoupe.sol";
 import "diamond-2/contracts/interfaces/IDiamondCut.sol";
 import "./IGasStation.sol";
 import "./IRewardPoll.sol";
+import "./IBasePoll.sol";
 import "./IAssetPool.sol";
 import "./IRoles.sol";
 
@@ -15,6 +16,7 @@ interface ISolution is
     IDiamondLoupe,
     IDiamondCut,
     IGasStation,
+    IBasePoll,
     IRewardPoll,
     IAssetPool,
     IRoles

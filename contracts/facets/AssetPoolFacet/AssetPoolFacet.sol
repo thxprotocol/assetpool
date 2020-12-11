@@ -4,6 +4,7 @@ pragma solidity ^0.7.4;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "diamond-2/contracts/libraries/LibDiamond.sol";
 import "../PollFacet/LibRewardPollStorage.sol";
+import "../PollFacet/LibBasePollStorage.sol";
 import "./Roles.sol";
 import "../../interfaces/IAssetPool.sol";
 
@@ -105,11 +106,11 @@ contract AssetPoolFacet is IAssetPool, Roles {
             .apStorage()
             .rewards[_id];
 
-        LibRewardPollStorage.RPStorage memory poll = LibRewardPollStorage
-            .rpStorageId(_id);
+        LibBasePollStorage.BasePollStorage storage poll = LibBasePollStorage
+            .basePollStorageId(_id);
 
         // storage will be deleted (e.g. set to default) after poll is finalized
-        require(poll.endtime == 0, "IS_NOT_FINALIZED");
+        require(poll.endTime == 0, "IS_NOT_FINALIZED");
         // setting both params to initial state is not allowed
         // this is a reserverd state for new rewards
         require(
@@ -149,13 +150,20 @@ contract AssetPoolFacet is IAssetPool, Roles {
         uint256 _withdrawAmount,
         uint256 _withdrawDuration
     ) internal {
-        LibRewardPollStorage.RPStorage storage st = LibRewardPollStorage
-            .rpStorageId(_id);
-        st.id = _id;
-        st.withdrawAmount = _withdrawAmount;
-        st.withdrawDuration = _withdrawDuration;
-        st.endtime =
+        LibBasePollStorage.BasePollStorage storage baseStorage = LibBasePollStorage
+            .basePollStorageId(_id);
+
+        baseStorage.id = _id;
+        baseStorage.startTime = block.timestamp;
+        baseStorage.endTime =
             block.timestamp +
             LibAssetPoolStorage.apStorage().rewardPollDuration;
+
+
+        LibRewardPollStorage.RPStorage storage rpStorage = LibRewardPollStorage
+            .rpStorageId(_id);
+
+        rpStorage.withdrawAmount = _withdrawAmount;
+        rpStorage.withdrawDuration = _withdrawDuration;
     }
 }

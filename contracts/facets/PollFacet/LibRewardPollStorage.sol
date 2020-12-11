@@ -3,13 +3,10 @@ pragma solidity ^0.7.4;
 
 library LibRewardPollStorage {
   struct RPStorage {
-    uint256 id;
     uint256 withdrawAmount;
     uint256 withdrawDuration;
-    uint256 endtime;
-    address poolAddress;
-    address gasStation;
   }
+
   function getPosition(uint256 _id) internal pure returns (bytes32) {
         return
             keccak256(abi.encode("diamond.contract.assetpool.rewardpoll", _id));
