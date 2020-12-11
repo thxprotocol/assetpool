@@ -89,6 +89,56 @@ contract AssetPoolFacet is IAssetPool, Roles {
     }
 
     /**
+     * @dev Updates a reward poll
+     * @param _id References reward
+     * @param _withdrawAmount New size for the reward.
+     * @param _withdrawDuration New duration of the reward
+     */
+    function updateReward(
+        uint256 _id,
+        uint256 _withdrawAmount,
+        uint256 _withdrawDuration
+    ) public onlyOwner {
+        // todo verify amount
+        require(isMember(_msgSender()), "NOT_MEMBER");
+        LibAssetPoolStorage.Reward memory current = LibAssetPoolStorage
+            .apStorage()
+            .rewards[_id];
+
+        LibRewardPollStorage.RPStorage memory poll = LibRewardPollStorage
+            .rpStorageId(_id);
+
+        // storage will be deleted (e.g. set to default) after poll is finalized
+        require(poll.endtime == 0, "IS_NOT_FINALIZED");
+        // setting both params to initial state is not allowed
+        // this is a reserverd state for new rewards
+        require(
+            !(_withdrawAmount == 0 && _withdrawDuration == 0),
+            "NOT_ALLOWED"
+        );
+
+        require(
+            !(_withdrawAmount == ENABLE_REWARD &&
+                current.state == LibAssetPoolStorage.RewardState.Enabled),
+            "ALREADY_ENABLED"
+        );
+
+        require(
+            !(_withdrawAmount == DISABLE_REWARD &&
+                current.state == LibAssetPoolStorage.RewardState.Disabled),
+            "ALREADY_DISABLED"
+        );
+
+        require(
+            current.withdrawAmount != _withdrawAmount &&
+                current.withdrawDuration != _withdrawDuration,
+            "IS_EQUAL"
+        );
+
+        _createRewardPoll(_id, _withdrawAmount, _withdrawDuration);
+    }
+
+    /**
      * @dev Starts a reward poll and stores the address of the poll.
      * @param _id Referenced reward
      * @param _withdrawAmount Size of the reward
