@@ -39,7 +39,8 @@ contract AssetPoolFactory is Ownable {
 
         // initialize gasstation
         assetPool.initializeGasStation(_api);
-        assetPool.initializeAssetPool(_owner, _token);
+        assetPool.initializeAssetPool(_token);
+        assetPool.initializeRoles(_owner);
         assetPool.transferOwnership(defaultController);
         emit AssetPoolDeployed(address(d));
     }

@@ -5,7 +5,8 @@ pragma solidity >=0.6.0 <0.8.0;
 
 import "@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "./LibAssetPoolStorage.sol";
+import "./LibAccessStorage.sol";
+import "./AccessControlView.sol";
 import "../GasStationFacet/RelayReceiver.sol";
 
 /**
@@ -43,11 +44,9 @@ import "../GasStationFacet/RelayReceiver.sol";
  * grant and revoke this role. Extra precautions should be taken to secure
  * accounts that have been granted it.
  */
-abstract contract AccessControl is RelayReceiver {
-    using EnumerableSet for EnumerableSet.AddressSet;
+abstract contract AccessControl is AccessControlView, RelayReceiver {
+ using EnumerableSet for EnumerableSet.AddressSet;
     using Address for address;
-
-    bytes32 public constant DEFAULT_ADMIN_ROLE = 0x00;
 
     /**
      * @dev Emitted when `newAdminRole` is set as ``role``'s admin role, replacing `previousAdminRole`
@@ -89,54 +88,6 @@ abstract contract AccessControl is RelayReceiver {
     );
 
     /**
-     * @dev Returns `true` if `account` has been granted `role`.
-     */
-    function hasRole(bytes32 role, address account) public view returns (bool) {
-        return
-            LibAssetPoolStorage.apStorage().roles[role].members.contains(
-                account
-            );
-    }
-
-    /**
-     * @dev Returns the number of accounts that have `role`. Can be used
-     * together with {getRoleMember} to enumerate all bearers of a role.
-     */
-    function getRoleMemberCount(bytes32 role) public view returns (uint256) {
-        return LibAssetPoolStorage.apStorage().roles[role].members.length();
-    }
-
-    /**
-     * @dev Returns one of the accounts that have `role`. `index` must be a
-     * value between 0 and {getRoleMemberCount}, non-inclusive.
-     *
-     * Role bearers are not sorted in any particular way, and their ordering may
-     * change at any point.
-     *
-     * WARNING: When using {getRoleMember} and {getRoleMemberCount}, make sure
-     * you perform all queries on the same block. See the following
-     * https://forum.openzeppelin.com/t/iterating-over-elements-on-enumerableset-in-openzeppelin-contracts/2296[forum post]
-     * for more information.
-     */
-    function getRoleMember(bytes32 role, uint256 index)
-        public
-        view
-        returns (address)
-    {
-        return LibAssetPoolStorage.apStorage().roles[role].members.at(index);
-    }
-
-    /**
-     * @dev Returns the admin role that controls `role`. See {grantRole} and
-     * {revokeRole}.
-     *
-     * To change a role's admin, use {_setRoleAdmin}.
-     */
-    function getRoleAdmin(bytes32 role) public view returns (bytes32) {
-        return LibAssetPoolStorage.apStorage().roles[role].adminRole;
-    }
-
-    /**
      * @dev Grants `role` to `account`.
      *
      * If `account` had not been already granted `role`, emits a {RoleGranted}
@@ -149,7 +100,7 @@ abstract contract AccessControl is RelayReceiver {
     function grantRole(bytes32 role, address account) public virtual {
         require(
             hasRole(
-                LibAssetPoolStorage.apStorage().roles[role].adminRole,
+               LibAccessStorage.roleStorage().roles[role].adminRole,
                 _msgSender()
             ),
             "AccessControl: sender must be an admin to grant"
@@ -170,7 +121,7 @@ abstract contract AccessControl is RelayReceiver {
     function revokeRole(bytes32 role, address account) public virtual {
         require(
             hasRole(
-                LibAssetPoolStorage.apStorage().roles[role].adminRole,
+                LibAccessStorage.roleStorage().roles[role].adminRole,
                 _msgSender()
             ),
             "AccessControl: sender must be an admin to revoke"
@@ -230,21 +181,21 @@ abstract contract AccessControl is RelayReceiver {
     function _setRoleAdmin(bytes32 role, bytes32 adminRole) internal virtual {
         emit RoleAdminChanged(
             role,
-            LibAssetPoolStorage.apStorage().roles[role].adminRole,
+            LibAccessStorage.roleStorage().roles[role].adminRole,
             adminRole
         );
-        LibAssetPoolStorage.apStorage().roles[role].adminRole = adminRole;
+        LibAccessStorage.roleStorage().roles[role].adminRole = adminRole;
     }
 
     function _grantRole(bytes32 role, address account) private {
-        if (LibAssetPoolStorage.apStorage().roles[role].members.add(account)) {
+        if (LibAccessStorage.roleStorage().roles[role].members.add(account)) {
             emit RoleGranted(role, account, _msgSender());
         }
     }
 
     function _revokeRole(bytes32 role, address account) private {
         if (
-            LibAssetPoolStorage.apStorage().roles[role].members.remove(account)
+            LibAccessStorage.roleStorage().roles[role].members.remove(account)
         ) {
             emit RoleRevoked(role, account, _msgSender());
         }

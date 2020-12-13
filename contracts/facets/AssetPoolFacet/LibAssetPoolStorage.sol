@@ -10,18 +10,11 @@ library LibAssetPoolStorage {
     );
 
     struct APstorage {
-        address owner;
         IERC20 token;
-        mapping(bytes32 => RoleData) roles;
 
         uint256 proposeWithdrawPollDuration;
         uint256 rewardPollDuration;
         Reward[] rewards;
-    }
-
-    struct RoleData {
-        EnumerableSet.AddressSet members;
-        bytes32 adminRole;
     }
 
     enum RewardState { Disabled, Enabled }

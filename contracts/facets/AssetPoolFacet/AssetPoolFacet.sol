@@ -5,25 +5,24 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "diamond-2/contracts/libraries/LibDiamond.sol";
 import "../PollFacet/LibRewardPollStorage.sol";
 import "../PollFacet/LibBasePollStorage.sol";
-import "./Roles.sol";
+import "../RolesFacet/RolesView.sol";
 import "../../interfaces/IAssetPool.sol";
+import "./LibAssetPoolStorage.sol";
+import "../GasStationFacet/RelayReceiver.sol";
 
-contract AssetPoolFacet is IAssetPool, Roles {
+contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
     uint256 constant ENABLE_REWARD = 2**250;
     uint256 constant DISABLE_REWARD = 2**251;
 
-    function initializeAssetPool(address _owner, address _tokenAddress)
+    function initializeAssetPool(address _tokenAddress)
         public
         override
     {
         // TODO, decide if reinitialize should be possible
         require(msg.sender == LibDiamond.diamondStorage().contractOwner);
 
-        __Roles_init(_owner);
-
         LibAssetPoolStorage.APstorage storage s = LibAssetPoolStorage
             .apStorage();
-        s.owner = _owner;
         s.token = IERC20(_tokenAddress);
     }
 
@@ -84,7 +83,7 @@ contract AssetPoolFacet is IAssetPool, Roles {
         uint256 _withdrawDuration
     ) public onlyOwner {
         // todo verify amount
-        require(isMember(_msgSender()), "NOT_MEMBER");
+        require(_isMember(_msgSender()), "NOT_MEMBER");
         LibAssetPoolStorage.Reward memory current = LibAssetPoolStorage
             .apStorage()
             .rewards[_id];

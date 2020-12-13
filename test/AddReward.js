@@ -37,6 +37,7 @@ describe("Test AddReward", function () {
       AssetPoolFacetView = await ethers.getContractFactory(
         "AssetPoolFacetView"
       );
+      RolesFacet = await ethers.getContractFactory("RolesFacet");
       DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
       DiamondLoupeFacet = await ethers.getContractFactory("DiamondLoupeFacet");
       OwnershipFacet = await ethers.getContractFactory("OwnershipFacet");
@@ -48,6 +49,7 @@ describe("Test AddReward", function () {
 
       assetPoolFacet = await AssetPoolFacet.deploy();
       assetPoolFacetView = await AssetPoolFacetView.deploy();
+      rolesFacet = await RolesFacet.deploy();
       diamondCutFacet = await DiamondCutFacet.deploy();
       diamondLoupeFacet = await DiamondLoupeFacet.deploy();
       ownershipFacet = await OwnershipFacet.deploy();
@@ -95,6 +97,11 @@ describe("Test AddReward", function () {
           action: FacetCutAction.Add,
           facetAddress: assetPoolFacetView.address,
           functionSelectors: getSelectors(assetPoolFacetView),
+        },
+        {
+          action: FacetCutAction.Add,
+          facetAddress: rolesFacet.address,
+          functionSelectors: getSelectors(rolesFacet),
         },
       ];
       assetPoolFactory = await AssetPoolFactory.deploy(diamondCut);

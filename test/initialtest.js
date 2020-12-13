@@ -18,10 +18,11 @@ function getSelectors(contract) {
   return signatures;
 }
 
-describe("Happyflow", function () {
+describe.only("Happyflow", function () {
   beforeEach(async function () {
     [owner, voter] = await ethers.getSigners();
     AssetPoolFacet = await ethers.getContractFactory("AssetPoolFacet");
+    RolesFacet = await ethers.getContractFactory("RolesFacet");
     DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
     DiamondLoupeFacet = await ethers.getContractFactory("DiamondLoupeFacet");
     OwnershipFacet = await ethers.getContractFactory("OwnershipFacet");
@@ -32,6 +33,7 @@ describe("Happyflow", function () {
     AssetPoolFactory = await ethers.getContractFactory("AssetPoolFactory");
 
     assetPoolFacet = await AssetPoolFacet.deploy();
+    rolesFacet = await RolesFacet.deploy();
     diamondCutFacet = await DiamondCutFacet.deploy();
     diamondLoupeFacet = await DiamondLoupeFacet.deploy();
     ownershipFacet = await OwnershipFacet.deploy();
@@ -80,22 +82,29 @@ describe("Happyflow", function () {
         facetAddress: assetPoolFacetView.address,
         functionSelectors: getSelectors(assetPoolFacetView),
       },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: rolesFacet.address,
+        functionSelectors: getSelectors(rolesFacet),
+      },
     ];
-    //console.error(diamondCut)
-    // all = []
+    // console.error(diamondCut);
+    // all = [];
     // for (facet in diamondCut) {
-    //     for (func in diamondCut[facet].functionSelectors) {
-    //         const elem  = diamondCut[facet].functionSelectors[func]
-    //         if (all.includes(elem)) {
-    //             console.error("facet", facet, "func", elem)
-    //             for(const key of Object.keys(gasStationFacet.functions)) {
-    //                 console.error(key)
-    //                 console.error(utils.keccak256(utils.toUtf8Bytes(key)).substr(0, 10));
-    //             }
-    //             break
-    //         }
-    //         all.push(elem)
+    //   for (func in diamondCut[facet].functionSelectors) {
+    //     const elem = diamondCut[facet].functionSelectors[func];
+    //     if (all.includes(elem)) {
+    //       console.error("facet", facet, "func", elem);
+    //       for (const key of Object.keys(rewardPollFacet.functions)) {
+    //         console.error(key);
+    //         console.error(
+    //           utils.keccak256(utils.toUtf8Bytes(key)).substr(0, 10)
+    //         );
+    //       }
+    //       break;
     //     }
+    //     all.push(elem);
+    //   }
     // }
     assetPoolFactory = await AssetPoolFactory.deploy(diamondCut);
     tx = await assetPoolFactory.deployAssetPool(

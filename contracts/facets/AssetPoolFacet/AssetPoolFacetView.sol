@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "diamond-2/contracts/libraries/LibDiamond.sol";
 import "../PollFacet/LibRewardPollStorage.sol";
 import "../PollFacet/LibBasePollStorage.sol";
-import "./Roles.sol";
+
 import "../../interfaces/IAssetPoolView.sol";
 import "./LibAssetPoolStorage.sol";
 
