@@ -34,6 +34,9 @@ describe("Test AddReward", function () {
       token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
 
       AssetPoolFacet = await ethers.getContractFactory("AssetPoolFacet");
+      AssetPoolFacetView = await ethers.getContractFactory(
+        "AssetPoolFacetView"
+      );
       DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
       DiamondLoupeFacet = await ethers.getContractFactory("DiamondLoupeFacet");
       OwnershipFacet = await ethers.getContractFactory("OwnershipFacet");
@@ -44,6 +47,7 @@ describe("Test AddReward", function () {
       AssetPoolFactory = await ethers.getContractFactory("AssetPoolFactory");
 
       assetPoolFacet = await AssetPoolFacet.deploy();
+      assetPoolFacetView = await AssetPoolFacetView.deploy();
       diamondCutFacet = await DiamondCutFacet.deploy();
       diamondLoupeFacet = await DiamondLoupeFacet.deploy();
       ownershipFacet = await OwnershipFacet.deploy();
@@ -87,6 +91,11 @@ describe("Test AddReward", function () {
           facetAddress: pollProxyFacet.address,
           functionSelectors: getSelectors(pollProxyFacet),
         },
+        {
+          action: FacetCutAction.Add,
+          facetAddress: assetPoolFacetView.address,
+          functionSelectors: getSelectors(assetPoolFacetView),
+        },
       ];
       assetPoolFactory = await AssetPoolFactory.deploy(diamondCut);
     })
@@ -125,23 +134,63 @@ describe("Test AddReward", function () {
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
 
-
       expect(await solution.getStartTime(0)).to.be.eq(rewardTimestamp);
       expect(await solution.getEndTime(0)).to.eq(rewardTimestamp + 300);
 
-      //   await solution.setRewardPollDuration(900);
+      await solution.setRewardPollDuration(900);
       //   // does not affect current polls
-      //   expect(await rewardPoll.startTime()).to.be.eq(rewardTimestamp);
-      //   expect(await rewardPoll.endTime()).to.be.eq(rewardTimestamp + 300);
+      expect(await solution.getStartTime(0)).to.be.eq(rewardTimestamp);
+      expect(await solution.getEndTime(0)).to.eq(rewardTimestamp + 300);
 
-      //   tx = await solution.addReward(parseEther("1"), 200);
-      //   rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
-      //     .timestamp;
-      //   reward = await solution.rewards(1);
-      //   rewardPoll = await ethers.getContractAt("RewardPoll", reward.poll);
+      tx = await solution.addReward(parseEther("1"), 200);
+      rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
+        .timestamp;
 
-      //   expect(await rewardPoll.startTime()).to.be.eq(rewardTimestamp);
-      //   expect(await rewardPoll.endTime()).to.be.eq(rewardTimestamp + 900);
+      expect(await solution.getStartTime(1)).to.be.eq(rewardTimestamp);
+      expect(await solution.getEndTime(1)).to.eq(rewardTimestamp + 900);
+    });
+  });
+  describe.only("Existing reward", async function () {
+    before(async function () {
+      await _beforeDeployment;
+      tx = await assetPoolFactory.deployAssetPool(
+        await owner.getAddress(),
+        await owner.getAddress(),
+        await owner.getAddress()
+      );
+      tx = await tx.wait();
+      diamond = tx.events[tx.events.length - 1].args.assetPool;
+      solution = await ethers.getContractAt("ISolution", diamond);
+      await solution.addManager(voter.getAddress());
+      await solution.setProposeWithdrawPollDuration(180);
+      await solution.setRewardPollDuration(180);
+      await token.transfer(solution.address, parseEther("1000"));
+
+      tx = await solution.addReward(parseEther("5"), 180);
+      rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
+        .timestamp;
+      reward = await solution.getReward(0);
+      //rewardPoll = await ethers.getContractAt("RewardPoll", reward.poll);
+    });
+    it("Verify reward storage", async function () {
+      expect(reward.id).to.be.eq(0);
+      expect(reward.withdrawAmount).to.be.eq(parseEther("0"));
+      expect(reward.withdrawDuration).to.be.eq(0);
+      expect(reward.state).to.be.eq(RewardState.Disabled);
+    });
+    it("Verify reward poll storage", async function () {
+      expect(await solution.getWithdrawAmount(0)).to.be.eq(parseEther("5"));
+      expect(await solution.getWithdrawDuration(0)).to.be.eq(180);
+    });
+    it("Verify basepoll storage", async function () {
+      expect(await solution.getStartTime(0)).to.be.eq(rewardTimestamp);
+      expect(await solution.getEndTime(0)).to.be.eq(rewardTimestamp + 180);
+      expect(await solution.getYesCounter(0)).to.be.eq(0);
+      expect(await solution.getNoCounter(0)).to.be.eq(0);
+      expect(await solution.getTotalVoted(0)).to.be.eq(0);
+    });
+    it("Verify current approval state", async function () {
+      expect(await solution.getCurrentApprovalState(0)).to.be.eq(false);
     });
   });
 });

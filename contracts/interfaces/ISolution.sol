@@ -6,6 +6,7 @@ import "./IGasStation.sol";
 import "./IRewardPoll.sol";
 import "./IBasePoll.sol";
 import "./IAssetPool.sol";
+import "./IAssetPoolView.sol";
 import "./IRoles.sol";
 
 pragma solidity ^0.7.4;
@@ -19,5 +20,6 @@ interface ISolution is
     IBasePoll,
     IRewardPoll,
     IAssetPool,
+    IAssetPoolView,
     IRoles
 {}

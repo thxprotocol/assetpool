@@ -27,10 +27,6 @@ contract AssetPoolFacet is IAssetPool, Roles {
         s.token = IERC20(_tokenAddress);
     }
 
-    function getToken() public override view returns (address) {
-        return address(LibAssetPoolStorage.apStorage().token);
-    }
-
     /**
      * @dev Set the duration for a withdraw poll poll.
      * @param _duration Duration in seconds
@@ -43,15 +39,6 @@ contract AssetPoolFacet is IAssetPool, Roles {
         LibAssetPoolStorage.apStorage().proposeWithdrawPollDuration = _duration;
     }
 
-    function getProposeWithdrawPollDuration()
-        public
-        override
-        view
-        returns (uint256)
-    {
-        return LibAssetPoolStorage.apStorage().proposeWithdrawPollDuration;
-    }
-
     /**
      * @dev Set the reward poll duration
      * @param _duration Duration in seconds
@@ -62,10 +49,6 @@ contract AssetPoolFacet is IAssetPool, Roles {
         onlyManager
     {
         LibAssetPoolStorage.apStorage().rewardPollDuration = _duration;
-    }
-
-    function getRewardPollDuration() public override view returns (uint256) {
-        return LibAssetPoolStorage.apStorage().rewardPollDuration;
     }
 
     /**
