@@ -13,4 +13,6 @@ interface IBasePoll {
     function getTotalVoted(uint256 _id) external view returns (uint256);
     function getVotesByAddress(uint256 _id, address _address) external view returns (LibBasePollStorage.Vote memory);
     function getCurrentApprovalState(uint256 _id) external view returns (bool);
+
+    function votePoll(uint256 _id, bool _agree) external;
 }

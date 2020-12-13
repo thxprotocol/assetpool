@@ -157,7 +157,7 @@ describe("Test AddReward", function () {
       expect(await solution.getEndTime(1)).to.eq(rewardTimestamp + 900);
     });
   });
-  describe.only("Existing reward", async function () {
+  describe("Existing reward", async function () {
     before(async function () {
       await _beforeDeployment;
       tx = await assetPoolFactory.deployAssetPool(
@@ -177,7 +177,6 @@ describe("Test AddReward", function () {
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
       reward = await solution.getReward(0);
-      //rewardPoll = await ethers.getContractAt("RewardPoll", reward.poll);
     });
     it("Verify reward storage", async function () {
       expect(reward.id).to.be.eq(0);
@@ -198,6 +197,35 @@ describe("Test AddReward", function () {
     });
     it("Verify current approval state", async function () {
       expect(await solution.getCurrentApprovalState(0)).to.be.eq(false);
+    });
+  });
+  describe("Vote reward", async function () {
+    before(async function () {
+      await _beforeDeployment;
+      tx = await assetPoolFactory.deployAssetPool(
+        await owner.getAddress(),
+        await owner.getAddress(),
+        await owner.getAddress()
+      );
+      tx = await tx.wait();
+      diamond = tx.events[tx.events.length - 1].args.assetPool;
+      solution = await ethers.getContractAt("ISolution", diamond);
+      await solution.addManager(voter.getAddress());
+      await solution.setProposeWithdrawPollDuration(180);
+      await solution.setRewardPollDuration(180);
+      await token.transfer(solution.address, parseEther("1000"));
+
+      tx = await solution.addReward(parseEther("5"), 180);
+      rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
+        .timestamp;
+      reward = await solution.getReward(0);
+
+      await solution.votePoll(0, true);
+    });
+    it("Verify basepoll storage", async function () {
+      expect(await solution.getYesCounter(0)).to.be.eq(1);
+      expect(await solution.getNoCounter(0)).to.be.eq(0);
+      expect(await solution.getTotalVoted(0)).to.be.eq(1);
     });
   });
 });

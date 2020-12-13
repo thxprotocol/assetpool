@@ -18,7 +18,7 @@ function getSelectors(contract) {
   return signatures;
 }
 
-describe.only("Happyflow", function () {
+describe("Happyflow", function () {
   beforeEach(async function () {
     [owner, voter] = await ethers.getSigners();
     AssetPoolFacet = await ethers.getContractFactory("AssetPoolFacet");

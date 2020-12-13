@@ -36,7 +36,6 @@ contract PollProxyFacet is IBasePoll, IRewardPoll, RelayReceiver {
         return LibBasePollStorage.basePollStorageId(_id).votesByAddress[_address];
     }
 
-
     function getCurrentApprovalState(uint256 _id) public override view returns (bool) {
         bytes32 position = LibBasePollStorage.getPosition(_id);
         bytes4 sig = bytes4(keccak256("_getCurrentApprovalState()"));
@@ -49,7 +48,16 @@ contract PollProxyFacet is IBasePoll, IRewardPoll, RelayReceiver {
         return abi.decode(data, (bool));
     }
 
+    function votePoll(uint256 _id, bool _agree) public override {
+        bytes32 position = LibBasePollStorage.getPosition(_id);
+        bytes4 sig = bytes4(keccak256("vote(bool)"));
+        bytes memory _call = abi.encodeWithSelector(sig, _agree);
 
+         (bool success, bytes memory data) = address(this).call(
+            abi.encodePacked(_call, position, _msgSender())
+        );
+        require(success, "fail");
+    }
 
     // Rewardpoll
     function getWithdrawAmount(uint256 _id)
