@@ -16,6 +16,24 @@ abstract contract BasePoll is RelayReceiver {
         _;
     }
 
+    /**
+     * Finalize poll and call onPollFinish callback with result
+     */
+    function finalize() public {
+        LibBasePollStorage.BasePollStorage storage bData = baseData();
+        require(block.timestamp >= bData.endTime, 'WRONG_STATE');
+        onPollFinish(bData.id);
+        delete bData.id;
+        delete bData.startTime;
+        delete bData.endTime;
+        delete bData.yesCounter;
+        delete bData.noCounter;
+        delete bData.totalVoted;
+        //delete bData.votesByAddress;
+    }
+
+    function onPollFinish(uint256 _id) internal virtual;
+
     function _getCurrentApprovalState() public view returns (bool) {
         LibBasePollStorage.BasePollStorage storage bData = baseData();
         return bData.yesCounter > bData.noCounter;
@@ -51,12 +69,36 @@ abstract contract BasePoll is RelayReceiver {
         bData.totalVoted = bData.totalVoted.add(1);
     }
 
+      /**
+     * @dev Revoke user`s vote
+     */
+    function revokeVote() external checkTime {
+        LibBasePollStorage.BasePollStorage storage bData = baseData();
+        address _voter = _msgSender();
 
-    function baseData() internal pure returns (LibBasePollStorage.BasePollStorage storage) {
-        return LibBasePollStorage.basePollStorage(rps());
+        require(bData.votesByAddress[_voter].time > 0, 'HAS_NOT_VOTED');
+
+        uint256 voiceWeight = bData.votesByAddress[_voter].weight;
+        bool agree = bData.votesByAddress[_voter].agree;
+
+        bData.votesByAddress[_voter].time = 0;
+        bData.votesByAddress[_voter].weight = 0;
+        bData.votesByAddress[_voter].agree = false;
+
+        bData.totalVoted = bData.totalVoted.sub(1);
+        if (agree) {
+            bData.yesCounter = bData.yesCounter.sub(voiceWeight);
+        } else {
+            bData.noCounter = bData.noCounter.sub(voiceWeight);
+        }
     }
 
-    function rps() internal pure returns (bytes32 rt) {
+
+    function baseData() internal pure returns (LibBasePollStorage.BasePollStorage storage) {
+        return LibBasePollStorage.basePollStorage(bps());
+    }
+
+    function bps() internal pure returns (bytes32 rt) {
         // These fields are not accessible from assembly
         bytes memory array = msg.data;
         // minus address space

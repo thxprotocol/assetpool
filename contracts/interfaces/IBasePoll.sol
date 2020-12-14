@@ -15,4 +15,6 @@ interface IBasePoll {
     function getCurrentApprovalState(uint256 _id) external view returns (bool);
 
     function votePoll(uint256 _id, bool _agree) external;
+    function revokeVotePoll(uint256 _id) external;
+    function finalizePoll(uint256 _id) external;
 }

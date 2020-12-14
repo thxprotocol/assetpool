@@ -24,7 +24,7 @@ describe("Test AddReward", function () {
   let rewardPoll;
   let _beforeDeployment;
 
-  let voteTx;
+  let voteTxTimestamp;
   let finalizeTx;
 
   before(
@@ -200,7 +200,7 @@ describe("Test AddReward", function () {
     });
   });
   describe("Vote reward", async function () {
-    before(async function () {
+    beforeEach(async function () {
       await _beforeDeployment;
       tx = await assetPoolFactory.deployAssetPool(
         await owner.getAddress(),
@@ -220,12 +220,132 @@ describe("Test AddReward", function () {
         .timestamp;
       reward = await solution.getReward(0);
 
-      await solution.votePoll(0, true);
+      tx = await solution.votePoll(0, true);
+      voteTxTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
+        .timestamp;
     });
     it("Verify basepoll storage", async function () {
       expect(await solution.getYesCounter(0)).to.be.eq(1);
       expect(await solution.getNoCounter(0)).to.be.eq(0);
       expect(await solution.getTotalVoted(0)).to.be.eq(1);
+
+      const vote = await solution.getVotesByAddress(0, owner.getAddress());
+      expect(vote.time).to.be.eq(voteTxTimestamp);
+      expect(vote.weight).to.be.eq(1);
+      expect(vote.agree).to.be.eq(true);
+    });
+    it("Verify current approval state", async function () {
+      expect(await solution.getCurrentApprovalState(0)).to.be.eq(true);
+    });
+    it("Voting twice not possible", async function () {
+      await expect(solution.votePoll(0, true)).to.be.revertedWith("HAS_VOTED");
+    });
+    it("Revoke vote", async function () {
+      await solution.revokeVotePoll(0);
+      expect(await solution.getYesCounter(0)).to.be.eq(0);
+      expect(await solution.getNoCounter(0)).to.be.eq(0);
+      expect(await solution.getTotalVoted(0)).to.be.eq(0);
+
+      const vote = await solution.getVotesByAddress(0, owner.getAddress());
+      expect(vote.time).to.be.eq(0);
+      expect(vote.weight).to.be.eq(0);
+      expect(vote.agree).to.be.eq(false);
+    });
+    it("Revoke twice", async function () {
+      await solution.revokeVotePoll(0);
+      await expect(solution.revokeVotePoll(0)).to.be.revertedWith(
+        "HAS_NOT_VOTED"
+      );
+    });
+    it("Revoke + vote again(st)", async function () {
+      await solution.revokeVotePoll(0);
+      tx = await solution.votePoll(0, false);
+      voteTxTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
+        .timestamp;
+      expect(await solution.getYesCounter(0)).to.be.eq(0);
+      expect(await solution.getNoCounter(0)).to.be.eq(1);
+      expect(await solution.getTotalVoted(0)).to.be.eq(1);
+
+      const vote = await solution.getVotesByAddress(0, owner.getAddress());
+      expect(vote.time).to.be.eq(voteTxTimestamp);
+      expect(vote.weight).to.be.eq(1);
+      expect(vote.agree).to.be.eq(false);
+    });
+    it("Finalizing not possible", async function () {
+      // if this one fails, please check timestmap first
+      await expect(solution.finalizePoll(0)).to.be.revertedWith("WRONG_STATE");
+    });
+  });
+  describe("Finalize reward (approved)", async function () {
+    beforeEach(async function () {
+      await _beforeDeployment;
+      tx = await assetPoolFactory.deployAssetPool(
+        await owner.getAddress(),
+        await owner.getAddress(),
+        await owner.getAddress()
+      );
+      tx = await tx.wait();
+      diamond = tx.events[tx.events.length - 1].args.assetPool;
+      solution = await ethers.getContractAt("ISolution", diamond);
+      await solution.addManager(voter.getAddress());
+      await solution.setProposeWithdrawPollDuration(180);
+      await solution.setRewardPollDuration(180);
+      await token.transfer(solution.address, parseEther("1000"));
+
+      tx = await solution.addReward(parseEther("5"), 250);
+      rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
+        .timestamp;
+
+      tx = await solution.votePoll(0, true);
+      await ethers.provider.send("evm_increaseTime", [180]);
+      await solution.finalizePoll(0);
+      reward = await solution.getReward(0);
+    });
+    it("Verify basepoll storage", async function () {
+      expect(await solution.getYesCounter(0)).to.be.eq(0);
+      expect(await solution.getNoCounter(0)).to.be.eq(0);
+      expect(await solution.getTotalVoted(0)).to.be.eq(0);
+    });
+    it("Verify reward storage", async function () {
+      expect(reward.withdrawAmount).to.be.eq(parseEther("5"));
+      expect(reward.withdrawDuration).to.be.eq(250);
+      expect(reward.state).to.be.eq(RewardState.Enabled);
+    });
+  });
+  describe("Finalize reward (declined)", async function () {
+    beforeEach(async function () {
+      await _beforeDeployment;
+      tx = await assetPoolFactory.deployAssetPool(
+        await owner.getAddress(),
+        await owner.getAddress(),
+        await owner.getAddress()
+      );
+      tx = await tx.wait();
+      diamond = tx.events[tx.events.length - 1].args.assetPool;
+      solution = await ethers.getContractAt("ISolution", diamond);
+      await solution.addManager(voter.getAddress());
+      await solution.setProposeWithdrawPollDuration(180);
+      await solution.setRewardPollDuration(180);
+      await token.transfer(solution.address, parseEther("1000"));
+
+      tx = await solution.addReward(parseEther("5"), 250);
+      rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
+        .timestamp;
+
+      tx = await solution.votePoll(0, false);
+      await ethers.provider.send("evm_increaseTime", [180]);
+      await solution.finalizePoll(0);
+      reward = await solution.getReward(0);
+    });
+    it("Verify basepoll storage", async function () {
+      expect(await solution.getYesCounter(0)).to.be.eq(0);
+      expect(await solution.getNoCounter(0)).to.be.eq(0);
+      expect(await solution.getTotalVoted(0)).to.be.eq(0);
+    });
+    it("Verify reward storage", async function () {
+      expect(reward.withdrawAmount).to.be.eq("0");
+      expect(reward.withdrawDuration).to.be.eq(0);
+      expect(reward.state).to.be.eq(RewardState.Disabled);
     });
   });
 });
