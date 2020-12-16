@@ -28,8 +28,16 @@ contract AssetPoolFacetView is IAssetPoolView {
         return LibAssetPoolStorage.apStorage().rewardPollDuration;
     }
 
-    function getReward(uint256 _id) public override view returns (LibAssetPoolStorage.Reward memory) {
-        return LibAssetPoolStorage.apStorage().rewards[_id];
+    function getPollCounter() public override view returns (uint256) {
+        return LibAssetPoolStorage.apStorage().pollCounter;
     }
 
+    function getReward(uint256 _id)
+        public
+        override
+        view
+        returns (LibAssetPoolStorage.Reward memory)
+    {
+        return LibAssetPoolStorage.apStorage().rewards[_id];
+    }
 }

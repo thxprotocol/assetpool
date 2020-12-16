@@ -12,5 +12,10 @@ interface IAssetPoolView {
 
     function getRewardPollDuration() external view returns (uint256);
 
-    function getReward(uint256 _id) external view returns (LibAssetPoolStorage.Reward memory);
+    function getReward(uint256 _id)
+        external
+        view
+        returns (LibAssetPoolStorage.Reward memory);
+
+    function getPollCounter() external view returns (uint256);
 }

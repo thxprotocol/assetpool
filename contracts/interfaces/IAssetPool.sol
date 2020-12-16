@@ -4,8 +4,7 @@ pragma solidity ^0.7.4;
 pragma experimental ABIEncoderV2;
 
 interface IAssetPool {
-    function initializeAssetPool(address _tokenAddress)
-        external;
+    function initializeAssetPool(address _tokenAddress) external;
 
     function setProposeWithdrawPollDuration(uint256 _duration) external;
 

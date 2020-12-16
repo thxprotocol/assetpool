@@ -14,6 +14,7 @@ library LibAssetPoolStorage {
 
         uint256 proposeWithdrawPollDuration;
         uint256 rewardPollDuration;
+        uint256 pollCounter;
         Reward[] rewards;
     }
 

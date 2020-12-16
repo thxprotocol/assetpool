@@ -32,11 +32,22 @@ contract PollProxyFacet is IBasePoll, IRewardPoll, RelayReceiver {
         return LibBasePollStorage.basePollStorageId(_id).totalVoted;
     }
 
-    function getVotesByAddress(uint256 _id, address _address) public override view returns (LibBasePollStorage.Vote memory) {
-        return LibBasePollStorage.basePollStorageId(_id).votesByAddress[_address];
+    function getVotesByAddress(uint256 _id, address _address)
+        public
+        override
+        view
+        returns (LibBasePollStorage.Vote memory)
+    {
+        return
+            LibBasePollStorage.basePollStorageId(_id).votesByAddress[_address];
     }
 
-    function getCurrentApprovalState(uint256 _id) public override view returns (bool) {
+    function getCurrentApprovalState(uint256 _id)
+        public
+        override
+        view
+        returns (bool)
+    {
         bytes32 position = LibBasePollStorage.getPosition(_id);
         bytes4 sig = bytes4(keccak256("_getCurrentApprovalState()"));
         bytes memory _call = abi.encodeWithSelector(sig);
@@ -82,6 +93,15 @@ contract PollProxyFacet is IBasePoll, IRewardPoll, RelayReceiver {
     }
 
     // Rewardpoll
+    function getRewardIndex(uint256 _id)
+        public
+        override
+        view
+        returns (uint256)
+    {
+        return LibRewardPollStorage.rpStorageId(_id).rewardIndex;
+    }
+
     function getWithdrawAmount(uint256 _id)
         public
         override

@@ -14,10 +14,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
     uint256 constant ENABLE_REWARD = 2**250;
     uint256 constant DISABLE_REWARD = 2**251;
 
-    function initializeAssetPool(address _tokenAddress)
-        public
-        override
-    {
+    function initializeAssetPool(address _tokenAddress) public override {
         // TODO, decide if reinitialize should be possible
         require(msg.sender == LibDiamond.diamondStorage().contractOwner);
 
@@ -132,20 +129,24 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         uint256 _withdrawAmount,
         uint256 _withdrawDuration
     ) internal {
-        LibBasePollStorage.BasePollStorage storage baseStorage = LibBasePollStorage
-            .basePollStorageId(_id);
 
-        baseStorage.id = _id;
+            LibBasePollStorage.BasePollStorage storage baseStorage
+         = LibBasePollStorage.basePollStorageId(_id);
+
+        LibAssetPoolStorage.APstorage storage apst = LibAssetPoolStorage
+            .apStorage();
+
+        baseStorage.id = apst.pollCounter;
         baseStorage.startTime = block.timestamp;
-        baseStorage.endTime =
-            block.timestamp +
-            LibAssetPoolStorage.apStorage().rewardPollDuration;
-
+        baseStorage.endTime = block.timestamp + apst.rewardPollDuration;
 
         LibRewardPollStorage.RPStorage storage rpStorage = LibRewardPollStorage
             .rpStorageId(_id);
 
+        rpStorage.rewardIndex = _id;
         rpStorage.withdrawAmount = _withdrawAmount;
         rpStorage.withdrawDuration = _withdrawDuration;
+
+        apst.pollCounter = apst.pollCounter + 1;
     }
 }

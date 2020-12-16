@@ -76,6 +76,11 @@ describe("Test AddReward", function () {
       expect(await solution.getStartTime(1)).to.be.eq(rewardTimestamp);
       expect(await solution.getEndTime(1)).to.eq(rewardTimestamp + 900);
     });
+    it("Test pollCounter", async function () {
+      const POLL_BEFORE = await solution.getPollCounter();
+      await solution.addReward(parseEther("1"), 200);
+      expect(await solution.getPollCounter()).to.eq(POLL_BEFORE.add(1));
+    });
   });
   describe("Existing reward", async function () {
     before(async function () {
@@ -107,6 +112,7 @@ describe("Test AddReward", function () {
     it("Verify reward poll storage", async function () {
       expect(await solution.getWithdrawAmount(0)).to.be.eq(parseEther("5"));
       expect(await solution.getWithdrawDuration(0)).to.be.eq(180);
+      expect(await solution.getRewardIndex(0)).to.be.eq(0);
     });
     it("Verify basepoll storage", async function () {
       expect(await solution.getStartTime(0)).to.be.eq(rewardTimestamp);
@@ -227,6 +233,7 @@ describe("Test AddReward", function () {
       expect(await solution.getTotalVoted(0)).to.be.eq(0);
     });
     it("Verify reward storage", async function () {
+      expect(reward.id).to.be.eq(0);
       expect(reward.withdrawAmount).to.be.eq(parseEther("5"));
       expect(reward.withdrawDuration).to.be.eq(250);
       expect(reward.state).to.be.eq(RewardState.Enabled);
@@ -263,6 +270,7 @@ describe("Test AddReward", function () {
       expect(await solution.getTotalVoted(0)).to.be.eq(0);
     });
     it("Verify reward storage", async function () {
+      expect(reward.id).to.be.eq(0);
       expect(reward.withdrawAmount).to.be.eq("0");
       expect(reward.withdrawDuration).to.be.eq(0);
       expect(reward.state).to.be.eq(RewardState.Disabled);

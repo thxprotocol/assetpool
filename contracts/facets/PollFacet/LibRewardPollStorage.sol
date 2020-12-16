@@ -3,6 +3,7 @@ pragma solidity ^0.7.4;
 
 library LibRewardPollStorage {
   struct RPStorage {
+    uint256 rewardIndex;
     uint256 withdrawAmount;
     uint256 withdrawDuration;
   }
