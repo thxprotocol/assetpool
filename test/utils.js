@@ -1,4 +1,5 @@
 const { utils } = require("ethers/lib");
+const { BigNumber } = require("ethers");
 
 function hex2a(hex) {
   var str = "";
@@ -62,17 +63,95 @@ module.exports = {
       };
     }
   },
-  FacetCutAction: {
-    Add: 0,
-    Replace: 1,
-    Remove: 2,
-  },
-  getSelectors: function (contract) {
-    const signatures = [];
-    for (const key of Object.keys(contract.functions)) {
-      signatures.push(utils.keccak256(utils.toUtf8Bytes(key)).substr(0, 10));
-    }
+  deployBasics: async (ethers, owner, voter) => {
+    FacetCutAction = {
+      Add: 0,
+      Replace: 1,
+      Remove: 2,
+    };
+    getSelectors = function (contract) {
+      const signatures = [];
+      for (const key of Object.keys(contract.functions)) {
+        signatures.push(utils.keccak256(utils.toUtf8Bytes(key)).substr(0, 10));
+      }
 
-    return signatures;
+      return signatures;
+    };
+    AssetPoolFacet = await ethers.getContractFactory("AssetPoolFacet");
+    AssetPoolFacetView = await ethers.getContractFactory("AssetPoolFacetView");
+    RolesFacet = await ethers.getContractFactory("RolesFacet");
+    DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
+    DiamondLoupeFacet = await ethers.getContractFactory("DiamondLoupeFacet");
+    OwnershipFacet = await ethers.getContractFactory("OwnershipFacet");
+    GasStationFacet = await ethers.getContractFactory("GasStationFacet");
+    RewardPollFacet = await ethers.getContractFactory("RewardPollFacet");
+    PollProxyFacet = await ethers.getContractFactory("PollProxyFacet");
+
+    AssetPoolFactory = await ethers.getContractFactory("AssetPoolFactory");
+
+    assetPoolFacet = await AssetPoolFacet.deploy();
+    assetPoolFacetView = await AssetPoolFacetView.deploy();
+    rolesFacet = await RolesFacet.deploy();
+    diamondCutFacet = await DiamondCutFacet.deploy();
+    diamondLoupeFacet = await DiamondLoupeFacet.deploy();
+    ownershipFacet = await OwnershipFacet.deploy();
+    gasStationFacet = await GasStationFacet.deploy();
+    rewardPollFacet = await RewardPollFacet.deploy();
+    pollProxyFacet = await PollProxyFacet.deploy();
+
+    diamondCut = [
+      {
+        action: FacetCutAction.Add,
+        facetAddress: assetPoolFacet.address,
+        functionSelectors: getSelectors(assetPoolFacet),
+      },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: diamondCutFacet.address,
+        functionSelectors: getSelectors(diamondCutFacet),
+      },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: diamondLoupeFacet.address,
+        functionSelectors: getSelectors(diamondLoupeFacet),
+      },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: ownershipFacet.address,
+        functionSelectors: getSelectors(ownershipFacet),
+      },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: gasStationFacet.address,
+        functionSelectors: getSelectors(gasStationFacet),
+      },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: rewardPollFacet.address,
+        functionSelectors: getSelectors(rewardPollFacet),
+      },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: pollProxyFacet.address,
+        functionSelectors: getSelectors(pollProxyFacet),
+      },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: assetPoolFacetView.address,
+        functionSelectors: getSelectors(assetPoolFacetView),
+      },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: rolesFacet.address,
+        functionSelectors: getSelectors(rolesFacet),
+      },
+    ];
+    return await AssetPoolFactory.deploy(diamondCut);
   },
+  RewardState: {
+    Disabled: 0,
+    Enabled: 1,
+  },
+  ENABLE_REWARD: BigNumber.from("2").pow(250),
+  DISABLE_REWARD: BigNumber.from("2").pow(251),
 };

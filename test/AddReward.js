@@ -1,110 +1,30 @@
 const { expect } = require("chai");
-const { BigNumber } = require("ethers");
 const { parseEther } = require("ethers/lib/utils");
-const { helpSign, FacetCutAction, getSelectors } = require("./utils.js");
-
-const RewardState = {
-  Disabled: 0,
-  Enabled: 1,
-};
-
-const ENABLE_REWARD = BigNumber.from("2").pow(250);
-const DISABLE_REWARD = BigNumber.from("2").pow(251);
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const {
+  helpSign,
+  deployBasics,
+  RewardState,
+  ENABLE_REWARD,
+  DISABLE_REWARD,
+} = require("./utils.js");
 
 describe("Test AddReward", function () {
   let solution;
 
-  let gasStation;
   let owner;
   let voter;
   let token;
-  let assetPool;
   let reward;
-  let rewardPoll;
   let _beforeDeployment;
 
   let voteTxTimestamp;
-  let finalizeTx;
 
   before(
     (_beforeDeployment = async function () {
       [owner, voter] = await ethers.getSigners();
       const THXToken = await ethers.getContractFactory("ExampleToken");
       token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
-
-      AssetPoolFacet = await ethers.getContractFactory("AssetPoolFacet");
-      AssetPoolFacetView = await ethers.getContractFactory(
-        "AssetPoolFacetView"
-      );
-      RolesFacet = await ethers.getContractFactory("RolesFacet");
-      DiamondCutFacet = await ethers.getContractFactory("DiamondCutFacet");
-      DiamondLoupeFacet = await ethers.getContractFactory("DiamondLoupeFacet");
-      OwnershipFacet = await ethers.getContractFactory("OwnershipFacet");
-      GasStationFacet = await ethers.getContractFactory("GasStationFacet");
-      RewardPollFacet = await ethers.getContractFactory("RewardPollFacet");
-      PollProxyFacet = await ethers.getContractFactory("PollProxyFacet");
-
-      AssetPoolFactory = await ethers.getContractFactory("AssetPoolFactory");
-
-      assetPoolFacet = await AssetPoolFacet.deploy();
-      assetPoolFacetView = await AssetPoolFacetView.deploy();
-      rolesFacet = await RolesFacet.deploy();
-      diamondCutFacet = await DiamondCutFacet.deploy();
-      diamondLoupeFacet = await DiamondLoupeFacet.deploy();
-      ownershipFacet = await OwnershipFacet.deploy();
-      gasStationFacet = await GasStationFacet.deploy();
-      rewardPollFacet = await RewardPollFacet.deploy();
-      pollProxyFacet = await PollProxyFacet.deploy();
-
-      diamondCut = [
-        {
-          action: FacetCutAction.Add,
-          facetAddress: assetPoolFacet.address,
-          functionSelectors: getSelectors(assetPoolFacet),
-        },
-        {
-          action: FacetCutAction.Add,
-          facetAddress: diamondCutFacet.address,
-          functionSelectors: getSelectors(diamondCutFacet),
-        },
-        {
-          action: FacetCutAction.Add,
-          facetAddress: diamondLoupeFacet.address,
-          functionSelectors: getSelectors(diamondLoupeFacet),
-        },
-        {
-          action: FacetCutAction.Add,
-          facetAddress: ownershipFacet.address,
-          functionSelectors: getSelectors(ownershipFacet),
-        },
-        {
-          action: FacetCutAction.Add,
-          facetAddress: gasStationFacet.address,
-          functionSelectors: getSelectors(gasStationFacet),
-        },
-        {
-          action: FacetCutAction.Add,
-          facetAddress: rewardPollFacet.address,
-          functionSelectors: getSelectors(rewardPollFacet),
-        },
-        {
-          action: FacetCutAction.Add,
-          facetAddress: pollProxyFacet.address,
-          functionSelectors: getSelectors(pollProxyFacet),
-        },
-        {
-          action: FacetCutAction.Add,
-          facetAddress: assetPoolFacetView.address,
-          functionSelectors: getSelectors(assetPoolFacetView),
-        },
-        {
-          action: FacetCutAction.Add,
-          facetAddress: rolesFacet.address,
-          functionSelectors: getSelectors(rolesFacet),
-        },
-      ];
-      assetPoolFactory = await AssetPoolFactory.deploy(diamondCut);
+      assetPoolFactory = await deployBasics(ethers, owner, voter);
     })
   );
   describe("Add reward", async function () {
