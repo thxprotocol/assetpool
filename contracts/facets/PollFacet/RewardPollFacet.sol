@@ -24,12 +24,12 @@ contract RewardPollFacet is BasePoll, RolesView {
      * @dev callback called after poll finalization
      */
     function onPollFinish(uint256 _id) internal override {
-        LibAssetPoolStorage.Reward storage rwAssetPool = LibAssetPoolStorage
-            .apStorage()
-            .rewards[_id - 1];
-
         LibRewardPollStorage.RPStorage storage rwPollData = LibRewardPollStorage
             .rpStorageId(_id);
+
+        LibAssetPoolStorage.Reward storage rwAssetPool = LibAssetPoolStorage
+            .apStorage()
+            .rewards[rwPollData.rewardIndex];
 
         bool approved = _getCurrentApprovalState();
         if (approved) {

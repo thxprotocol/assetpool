@@ -218,7 +218,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         LibRewardPollStorage.RPStorage storage rpStorage = LibRewardPollStorage
             .rpStorageId(apst.pollCounter);
 
-        rpStorage.rewardIndex = _id;
+        rpStorage.rewardIndex = _id - 1;
         rpStorage.withdrawAmount = _withdrawAmount;
         rpStorage.withdrawDuration = _withdrawDuration;
 

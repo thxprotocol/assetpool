@@ -22,29 +22,15 @@ describe("Test UpdateReward", function () {
 
   let voteTx;
   let finalizeTx;
-  let updateReward = async (gasStation, assetPool, args, account, pass) => {
-    tx = await helpSign(gasStation, assetPool, "updateReward", args, account);
-    if (tx.error !== null) {
-      return {
-        data: null,
-        error: tx.error,
-      };
-    }
-    reward = await assetPool.rewards(0);
-    rewardPoll = await ethers.getContractAt("RewardPoll", reward.poll);
-    tx = await helpSign(gasStation, rewardPoll, "vote", [pass], account);
-    if (tx.error !== null) {
-      return {
-        data: null,
-        error: tx.error,
-      };
-    }
+  let updateReward = async (id, amount, time, pass) => {
+    tx = await solution.updateReward(id, amount, time);
+    tx = await tx.wait();
+
+    const poll = tx.events[0].args.id;
+    await solution.votePoll(poll, pass);
     await ethers.provider.send("evm_increaseTime", [180]);
-    await rewardPoll.finalize();
-    return {
-      data: await assetPool.rewards(0),
-      error: null,
-    };
+    await solution.finalizePoll(poll);
+    return solution.getReward(id);
   };
 
   beforeEach(async function () {
@@ -81,12 +67,21 @@ describe("Test UpdateReward", function () {
 
     expect(await solution.getWithdrawAmount(2)).to.be.eq(parseEther("5"));
     expect(await solution.getWithdrawDuration(2)).to.be.eq(300);
-    expect(await solution.getRewardIndex(2)).to.be.eq(1);
+    expect(await solution.getRewardIndex(2)).to.be.eq(0);
     expect(await solution.getStartTime(2)).to.be.eq(rewardTimestamp);
     expect(await solution.getEndTime(2)).to.be.eq(rewardTimestamp + 180);
     expect(await solution.getYesCounter(2)).to.be.eq(0);
     expect(await solution.getNoCounter(2)).to.be.eq(0);
     expect(await solution.getTotalVoted(2)).to.be.eq(0);
     expect(await solution.getCurrentApprovalState(2)).to.be.eq(false);
+  });
+  it("approve", async function () {
+    reward = await updateReward(1, parseEther("10"), 300, true);
+
+    expect(reward.id).to.be.eq(1);
+    expect(reward.pollId).to.be.eq(0);
+    expect(reward.withdrawAmount).to.be.eq(parseEther("10"));
+    expect(reward.withdrawDuration).to.be.eq(300);
+    expect(reward.state).to.be.eq(RewardState.Enabled);
   });
 });

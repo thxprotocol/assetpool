@@ -113,7 +113,7 @@ describe("Test AddReward", function () {
     it("Verify reward poll storage", async function () {
       expect(await solution.getWithdrawAmount(1)).to.be.eq(parseEther("5"));
       expect(await solution.getWithdrawDuration(1)).to.be.eq(180);
-      expect(await solution.getRewardIndex(1)).to.be.eq(1);
+      expect(await solution.getRewardIndex(1)).to.be.eq(0);
     });
     it("Verify basepoll storage", async function () {
       expect(await solution.getStartTime(1)).to.be.eq(rewardTimestamp);
