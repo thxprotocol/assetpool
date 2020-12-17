@@ -11,6 +11,8 @@ import "../../interfaces/IAssetPool.sol";
 import "./LibAssetPoolStorage.sol";
 import "../GasStationFacet/RelayReceiver.sol";
 
+import "hardhat/console.sol";
+
 contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
     uint256 constant ENABLE_REWARD = 2**250;
     uint256 constant DISABLE_REWARD = 2**251;
@@ -115,8 +117,8 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         );
 
         require(
-            current.withdrawAmount != _withdrawAmount &&
-                current.withdrawDuration != _withdrawDuration,
+            !(current.withdrawAmount == _withdrawAmount &&
+                current.withdrawDuration == _withdrawDuration),
             "IS_EQUAL"
         );
 
