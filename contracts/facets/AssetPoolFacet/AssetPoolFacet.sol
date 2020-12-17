@@ -65,7 +65,11 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
 
         reward.id = LibAssetPoolStorage.apStorage().rewards.length;
         reward.state = LibAssetPoolStorage.RewardState.Disabled;
-        _createRewardPoll(reward.id, _withdrawAmount, _withdrawDuration);
+        reward.pollId = _createRewardPoll(
+            reward.id,
+            _withdrawAmount,
+            _withdrawDuration
+        );
         LibAssetPoolStorage.apStorage().rewards.push(reward);
     }
 
@@ -161,7 +165,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         uint256 _amount,
         uint256 _duration,
         address _beneficiary
-    ) internal {
+    ) internal returns (uint256) {
         LibAssetPoolStorage.APstorage storage apst = LibAssetPoolStorage
             .apStorage();
 
@@ -183,6 +187,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         emit WithdrawPollCreated(apst.pollCounter, _beneficiary);
 
         apst.pollCounter = apst.pollCounter + 1;
+        return baseStorage.id;
     }
 
     /**
@@ -195,7 +200,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         uint256 _id,
         uint256 _withdrawAmount,
         uint256 _withdrawDuration
-    ) internal {
+    ) internal returns (uint256) {
         LibAssetPoolStorage.APstorage storage apst = LibAssetPoolStorage
             .apStorage();
 
@@ -221,5 +226,6 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
             _withdrawAmount
         );
         apst.pollCounter = apst.pollCounter + 1;
+        return baseStorage.id;
     }
 }

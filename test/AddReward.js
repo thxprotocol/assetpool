@@ -107,6 +107,7 @@ describe("Test AddReward", function () {
       expect(reward.id).to.be.eq(0);
       expect(reward.withdrawAmount).to.be.eq(parseEther("0"));
       expect(reward.withdrawDuration).to.be.eq(0);
+      expect(reward.pollId).to.be.eq(0);
       expect(reward.state).to.be.eq(RewardState.Disabled);
     });
     it("Verify reward poll storage", async function () {
@@ -236,6 +237,7 @@ describe("Test AddReward", function () {
       expect(reward.id).to.be.eq(0);
       expect(reward.withdrawAmount).to.be.eq(parseEther("5"));
       expect(reward.withdrawDuration).to.be.eq(250);
+      expect(reward.pollId).to.be.eq(0);
       expect(reward.state).to.be.eq(RewardState.Enabled);
     });
   });
@@ -273,6 +275,7 @@ describe("Test AddReward", function () {
       expect(reward.id).to.be.eq(0);
       expect(reward.withdrawAmount).to.be.eq("0");
       expect(reward.withdrawDuration).to.be.eq(0);
+      expect(reward.pollId).to.be.eq(0);
       expect(reward.state).to.be.eq(RewardState.Disabled);
     });
   });

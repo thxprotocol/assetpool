@@ -24,6 +24,7 @@ library LibAssetPoolStorage {
         uint256 id;
         uint256 withdrawAmount;
         uint256 withdrawDuration;
+        uint256 pollId;
         RewardState state;
     }
 
