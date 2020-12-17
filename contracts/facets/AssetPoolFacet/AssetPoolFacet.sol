@@ -4,6 +4,7 @@ pragma solidity ^0.7.4;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "diamond-2/contracts/libraries/LibDiamond.sol";
 import "../PollFacet/LibRewardPollStorage.sol";
+import "../PollFacet/LibWithdrawPollStorage.sol";
 import "../PollFacet/LibBasePollStorage.sol";
 import "../RolesFacet/RolesView.sol";
 import "../../interfaces/IAssetPool.sol";
@@ -78,7 +79,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         uint256 _id,
         uint256 _withdrawAmount,
         uint256 _withdrawDuration
-    ) public onlyOwner {
+    ) public override onlyOwner {
         // todo verify amount
         require(_isMember(_msgSender()), "NOT_MEMBER");
         LibAssetPoolStorage.Reward memory current = LibAssetPoolStorage
@@ -119,6 +120,72 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
     }
 
     /**
+     * @dev Creates a withdraw poll for a reward.
+     * @param _id Reference id of the reward
+     * @param _beneficiary Address of the beneficiary
+     */
+    function claimRewardFor(uint256 _id, address _beneficiary) public override {
+        require(_isMember(_msgSender()), "NOT_MEMBER");
+        require(_isMember(_beneficiary), "NOT_MEMBER");
+
+        LibAssetPoolStorage.Reward memory current = LibAssetPoolStorage
+            .apStorage()
+            .rewards[_id];
+
+        require(
+            current.state == LibAssetPoolStorage.RewardState.Enabled,
+            "IS_NOT_ENABLED"
+        );
+        _createWithdrawPoll(
+            current.withdrawAmount,
+            current.withdrawDuration,
+            _beneficiary
+        );
+    }
+
+    /**
+     * @dev Creates a withdraw poll for a reward.
+     * @param _id Reference id of the reward
+     */
+    function claimReward(uint256 _id) public override {
+        claimRewardFor(_id, _msgSender());
+    }
+
+    /**
+     * @dev Starts a withdraw poll.
+     * @param _amount Size of the withdrawal
+     * @param _duration The duration the withdraw poll
+     * @param _beneficiary Beneficiary of the reward
+     */
+    function _createWithdrawPoll(
+        uint256 _amount,
+        uint256 _duration,
+        address _beneficiary
+    ) internal {
+        LibAssetPoolStorage.APstorage storage apst = LibAssetPoolStorage
+            .apStorage();
+
+
+            LibBasePollStorage.BasePollStorage storage baseStorage
+         = LibBasePollStorage.basePollStorageId(apst.pollCounter);
+
+        baseStorage.id = apst.pollCounter;
+        baseStorage.startTime = block.timestamp;
+        baseStorage.endTime = block.timestamp + _duration;
+
+
+            LibWithdrawPollStorage.WPStorage storage wpStorage
+         = LibWithdrawPollStorage.wpStorageId(apst.pollCounter);
+
+        wpStorage.amount = _amount;
+        wpStorage.beneficiary = _beneficiary;
+
+        emit WithdrawPollCreated(apst.pollCounter, _beneficiary);
+
+        apst.pollCounter = apst.pollCounter + 1;
+    }
+
+    /**
      * @dev Starts a reward poll and stores the address of the poll.
      * @param _id Referenced reward
      * @param _withdrawAmount Size of the reward
@@ -129,24 +196,30 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         uint256 _withdrawAmount,
         uint256 _withdrawDuration
     ) internal {
-
-            LibBasePollStorage.BasePollStorage storage baseStorage
-         = LibBasePollStorage.basePollStorageId(_id);
-
         LibAssetPoolStorage.APstorage storage apst = LibAssetPoolStorage
             .apStorage();
+
+
+            LibBasePollStorage.BasePollStorage storage baseStorage
+         = LibBasePollStorage.basePollStorageId(apst.pollCounter);
 
         baseStorage.id = apst.pollCounter;
         baseStorage.startTime = block.timestamp;
         baseStorage.endTime = block.timestamp + apst.rewardPollDuration;
 
         LibRewardPollStorage.RPStorage storage rpStorage = LibRewardPollStorage
-            .rpStorageId(_id);
+            .rpStorageId(apst.pollCounter);
 
         rpStorage.rewardIndex = _id;
         rpStorage.withdrawAmount = _withdrawAmount;
         rpStorage.withdrawDuration = _withdrawDuration;
 
+        emit RewardPollCreated(
+            apst.pollCounter,
+            _msgSender(),
+            _id,
+            _withdrawAmount
+        );
         apst.pollCounter = apst.pollCounter + 1;
     }
 }
