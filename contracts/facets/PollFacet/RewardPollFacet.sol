@@ -14,39 +14,43 @@ contract RewardPollFacet is BasePoll, RolesView {
 
     event Sender(address sender);
 
-   function vote(bool _agree) external override {
+    function vote(bool _agree) external override {
         address _voter = _msgSender();
-        require(_isMember(_voter), 'NO_MEMBER');
+        require(_isMember(_voter), "NO_MEMBER");
         _vote(_agree, _voter);
     }
 
-     /**
+    /**
      * @dev callback called after poll finalization
      */
     function onPollFinish(uint256 _id) internal override {
-        bool approved = _getCurrentApprovalState();
-        if (!approved) {
-            return;
-        }
-
         LibAssetPoolStorage.Reward storage rwAssetPool = LibAssetPoolStorage
             .apStorage()
-            .rewards[_id];
+            .rewards[_id - 1];
 
-        LibRewardPollStorage.RPStorage storage rwPollData = LibRewardPollStorage.rpStorageId(_id);
+        LibRewardPollStorage.RPStorage storage rwPollData = LibRewardPollStorage
+            .rpStorageId(_id);
 
-        if (rwPollData.withdrawAmount == ENABLE_REWARD) {
-            rwAssetPool.state = LibAssetPoolStorage.RewardState.Enabled;
-        } else if (rwPollData.withdrawAmount == DISABLE_REWARD) {
-            rwAssetPool.state = LibAssetPoolStorage.RewardState.Disabled;
-        } else {
-            // initial state
-            if (rwAssetPool.withdrawAmount == 0 && rwAssetPool.withdrawDuration == 0 ) {
+        bool approved = _getCurrentApprovalState();
+        if (approved) {
+            if (rwPollData.withdrawAmount == ENABLE_REWARD) {
                 rwAssetPool.state = LibAssetPoolStorage.RewardState.Enabled;
+            } else if (rwPollData.withdrawAmount == DISABLE_REWARD) {
+                rwAssetPool.state = LibAssetPoolStorage.RewardState.Disabled;
+            } else {
+                // initial state
+                if (
+                    rwAssetPool.withdrawAmount == 0 &&
+                    rwAssetPool.withdrawDuration == 0
+                ) {
+                    rwAssetPool.state = LibAssetPoolStorage.RewardState.Enabled;
+                }
+                rwAssetPool.withdrawAmount = rwPollData.withdrawAmount;
+                rwAssetPool.withdrawDuration = rwPollData.withdrawDuration;
             }
-            rwAssetPool.withdrawAmount = rwPollData.withdrawAmount;
-            rwAssetPool.withdrawDuration = rwPollData.withdrawDuration;
         }
+
+        delete rwAssetPool.pollId;
         delete rwPollData.withdrawAmount;
         delete rwPollData.withdrawDuration;
     }

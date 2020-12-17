@@ -45,52 +45,52 @@ describe("Test ClaimReward(for), storage/access", function () {
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
 
-      tx = await solution.votePoll(0, true);
+      tx = await solution.votePoll(1, true);
       await ethers.provider.send("evm_increaseTime", [180]);
-      await solution.finalizePoll(0);
+      await solution.finalizePoll(1);
     })
   );
   it("Test claimReward", async function () {
-    tx = await solution.claimReward(0);
+    tx = await solution.claimReward(1);
     withdrawTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
       .timestamp;
     tx = await tx.wait();
     const member = tx.events[0].args.member;
     const id = tx.events[0].args.id;
     expect(member).to.be.eq(await owner.getAddress());
-    expect(id).to.be.eq(1);
+    expect(id).to.be.eq(2);
   });
   it("withdrawPoll storage", async function () {
-    expect(await solution.getBeneficiary(1)).to.be.eq(await owner.getAddress());
-    expect(await solution.getAmount(1)).to.be.eq(parseEther("5"));
+    expect(await solution.getBeneficiary(2)).to.be.eq(await owner.getAddress());
+    expect(await solution.getAmount(2)).to.be.eq(parseEther("5"));
   });
   it("basepoll storage", async function () {
-    expect(await solution.getStartTime(1)).to.be.eq(withdrawTimestamp);
-    expect(await solution.getEndTime(1)).to.be.eq(withdrawTimestamp + 250);
-    expect(await solution.getYesCounter(1)).to.be.eq(0);
-    expect(await solution.getNoCounter(1)).to.be.eq(0);
-    expect(await solution.getTotalVoted(1)).to.be.eq(0);
+    expect(await solution.getStartTime(2)).to.be.eq(withdrawTimestamp);
+    expect(await solution.getEndTime(2)).to.be.eq(withdrawTimestamp + 250);
+    expect(await solution.getYesCounter(2)).to.be.eq(0);
+    expect(await solution.getNoCounter(2)).to.be.eq(0);
+    expect(await solution.getTotalVoted(2)).to.be.eq(0);
   });
   it("Verify current approval state", async function () {
-    expect(await solution.getCurrentApprovalState(1)).to.be.eq(false);
+    expect(await solution.getCurrentApprovalState(2)).to.be.eq(false);
   });
   it("Claim reward as non member", async function () {
-    await expect(solution.connect(voter).claimReward(0)).to.be.revertedWith(
+    await expect(solution.connect(voter).claimReward(1)).to.be.revertedWith(
       "NOT_MEMBER"
     );
   });
   it("Claim rewardFor non member", async function () {
     await expect(
-      solution.connect(owner).claimRewardFor(0, await voter.getAddress())
+      solution.connect(owner).claimRewardFor(1, await voter.getAddress())
     ).to.be.revertedWith("NOT_MEMBER");
   });
   it("Claim rewardFor member as non owner", async function () {
     await expect(
-      solution.connect(voter).claimRewardFor(0, await owner.getAddress())
+      solution.connect(voter).claimRewardFor(1, await owner.getAddress())
     ).to.be.revertedWith("NOT_MEMBER");
   });
   it("Claim non reward", async function () {
-    await expect(solution.connect(owner).claimReward(1)).to.be.reverted;
+    await expect(solution.connect(owner).claimReward(2)).to.be.reverted;
   });
   // it("Claim disabled reward", async function () {
   //   tx = await solution.updateReward(0, DISABLE_REWARD, 0);

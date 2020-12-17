@@ -38,6 +38,6 @@ contract AssetPoolFacetView is IAssetPoolView {
         view
         returns (LibAssetPoolStorage.Reward memory)
     {
-        return LibAssetPoolStorage.apStorage().rewards[_id];
+        return LibAssetPoolStorage.apStorage().rewards[_id - 1];
     }
 }

@@ -61,20 +61,20 @@ describe("Test AddReward", function () {
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
 
-      expect(await solution.getStartTime(0)).to.be.eq(rewardTimestamp);
-      expect(await solution.getEndTime(0)).to.eq(rewardTimestamp + 300);
+      expect(await solution.getStartTime(1)).to.be.eq(rewardTimestamp);
+      expect(await solution.getEndTime(1)).to.eq(rewardTimestamp + 300);
 
       await solution.setRewardPollDuration(900);
       //   // does not affect current polls
-      expect(await solution.getStartTime(0)).to.be.eq(rewardTimestamp);
-      expect(await solution.getEndTime(0)).to.eq(rewardTimestamp + 300);
+      expect(await solution.getStartTime(1)).to.be.eq(rewardTimestamp);
+      expect(await solution.getEndTime(1)).to.eq(rewardTimestamp + 300);
 
       tx = await solution.addReward(parseEther("1"), 200);
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
 
-      expect(await solution.getStartTime(1)).to.be.eq(rewardTimestamp);
-      expect(await solution.getEndTime(1)).to.eq(rewardTimestamp + 900);
+      expect(await solution.getStartTime(2)).to.be.eq(rewardTimestamp);
+      expect(await solution.getEndTime(2)).to.eq(rewardTimestamp + 900);
     });
     it("Test pollCounter", async function () {
       const POLL_BEFORE = await solution.getPollCounter();
@@ -101,29 +101,29 @@ describe("Test AddReward", function () {
       tx = await solution.addReward(parseEther("5"), 180);
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
-      reward = await solution.getReward(0);
+      reward = await solution.getReward(1);
     });
     it("Verify reward storage", async function () {
-      expect(reward.id).to.be.eq(0);
+      expect(reward.id).to.be.eq(1);
       expect(reward.withdrawAmount).to.be.eq(parseEther("0"));
       expect(reward.withdrawDuration).to.be.eq(0);
-      expect(reward.pollId).to.be.eq(0);
+      expect(reward.pollId).to.be.eq(1);
       expect(reward.state).to.be.eq(RewardState.Disabled);
     });
     it("Verify reward poll storage", async function () {
-      expect(await solution.getWithdrawAmount(0)).to.be.eq(parseEther("5"));
-      expect(await solution.getWithdrawDuration(0)).to.be.eq(180);
-      expect(await solution.getRewardIndex(0)).to.be.eq(0);
+      expect(await solution.getWithdrawAmount(1)).to.be.eq(parseEther("5"));
+      expect(await solution.getWithdrawDuration(1)).to.be.eq(180);
+      expect(await solution.getRewardIndex(1)).to.be.eq(1);
     });
     it("Verify basepoll storage", async function () {
-      expect(await solution.getStartTime(0)).to.be.eq(rewardTimestamp);
-      expect(await solution.getEndTime(0)).to.be.eq(rewardTimestamp + 180);
-      expect(await solution.getYesCounter(0)).to.be.eq(0);
-      expect(await solution.getNoCounter(0)).to.be.eq(0);
-      expect(await solution.getTotalVoted(0)).to.be.eq(0);
+      expect(await solution.getStartTime(1)).to.be.eq(rewardTimestamp);
+      expect(await solution.getEndTime(1)).to.be.eq(rewardTimestamp + 180);
+      expect(await solution.getYesCounter(1)).to.be.eq(0);
+      expect(await solution.getNoCounter(1)).to.be.eq(0);
+      expect(await solution.getTotalVoted(1)).to.be.eq(0);
     });
     it("Verify current approval state", async function () {
-      expect(await solution.getCurrentApprovalState(0)).to.be.eq(false);
+      expect(await solution.getCurrentApprovalState(1)).to.be.eq(false);
     });
   });
   describe("Vote reward", async function () {
@@ -145,62 +145,62 @@ describe("Test AddReward", function () {
       tx = await solution.addReward(parseEther("5"), 180);
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
-      reward = await solution.getReward(0);
+      reward = await solution.getReward(1);
 
-      tx = await solution.votePoll(0, true);
+      tx = await solution.votePoll(1, true);
       voteTxTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
     });
     it("Verify basepoll storage", async function () {
-      expect(await solution.getYesCounter(0)).to.be.eq(1);
-      expect(await solution.getNoCounter(0)).to.be.eq(0);
-      expect(await solution.getTotalVoted(0)).to.be.eq(1);
+      expect(await solution.getYesCounter(1)).to.be.eq(1);
+      expect(await solution.getNoCounter(1)).to.be.eq(0);
+      expect(await solution.getTotalVoted(1)).to.be.eq(1);
 
-      const vote = await solution.getVotesByAddress(0, owner.getAddress());
+      const vote = await solution.getVotesByAddress(1, owner.getAddress());
       expect(vote.time).to.be.eq(voteTxTimestamp);
       expect(vote.weight).to.be.eq(1);
       expect(vote.agree).to.be.eq(true);
     });
     it("Verify current approval state", async function () {
-      expect(await solution.getCurrentApprovalState(0)).to.be.eq(true);
+      expect(await solution.getCurrentApprovalState(1)).to.be.eq(true);
     });
     it("Voting twice not possible", async function () {
-      await expect(solution.votePoll(0, true)).to.be.revertedWith("HAS_VOTED");
+      await expect(solution.votePoll(1, true)).to.be.revertedWith("HAS_VOTED");
     });
     it("Revoke vote", async function () {
-      await solution.revokeVotePoll(0);
-      expect(await solution.getYesCounter(0)).to.be.eq(0);
-      expect(await solution.getNoCounter(0)).to.be.eq(0);
-      expect(await solution.getTotalVoted(0)).to.be.eq(0);
+      await solution.revokeVotePoll(1);
+      expect(await solution.getYesCounter(1)).to.be.eq(0);
+      expect(await solution.getNoCounter(1)).to.be.eq(0);
+      expect(await solution.getTotalVoted(1)).to.be.eq(0);
 
-      const vote = await solution.getVotesByAddress(0, owner.getAddress());
+      const vote = await solution.getVotesByAddress(1, owner.getAddress());
       expect(vote.time).to.be.eq(0);
       expect(vote.weight).to.be.eq(0);
       expect(vote.agree).to.be.eq(false);
     });
     it("Revoke twice", async function () {
-      await solution.revokeVotePoll(0);
-      await expect(solution.revokeVotePoll(0)).to.be.revertedWith(
+      await solution.revokeVotePoll(1);
+      await expect(solution.revokeVotePoll(1)).to.be.revertedWith(
         "HAS_NOT_VOTED"
       );
     });
     it("Revoke + vote again(st)", async function () {
-      await solution.revokeVotePoll(0);
-      tx = await solution.votePoll(0, false);
+      await solution.revokeVotePoll(1);
+      tx = await solution.votePoll(1, false);
       voteTxTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
-      expect(await solution.getYesCounter(0)).to.be.eq(0);
-      expect(await solution.getNoCounter(0)).to.be.eq(1);
-      expect(await solution.getTotalVoted(0)).to.be.eq(1);
+      expect(await solution.getYesCounter(1)).to.be.eq(0);
+      expect(await solution.getNoCounter(1)).to.be.eq(1);
+      expect(await solution.getTotalVoted(1)).to.be.eq(1);
 
-      const vote = await solution.getVotesByAddress(0, owner.getAddress());
+      const vote = await solution.getVotesByAddress(1, owner.getAddress());
       expect(vote.time).to.be.eq(voteTxTimestamp);
       expect(vote.weight).to.be.eq(1);
       expect(vote.agree).to.be.eq(false);
     });
     it("Finalizing not possible", async function () {
       // if this one fails, please check timestmap first
-      await expect(solution.finalizePoll(0)).to.be.revertedWith("WRONG_STATE");
+      await expect(solution.finalizePoll(1)).to.be.revertedWith("WRONG_STATE");
     });
   });
   describe("Finalize reward (approved)", async function () {
@@ -223,18 +223,18 @@ describe("Test AddReward", function () {
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
 
-      tx = await solution.votePoll(0, true);
+      tx = await solution.votePoll(1, true);
       await ethers.provider.send("evm_increaseTime", [180]);
-      await solution.finalizePoll(0);
-      reward = await solution.getReward(0);
+      await solution.finalizePoll(1);
+      reward = await solution.getReward(1);
     });
     it("Verify basepoll storage", async function () {
-      expect(await solution.getYesCounter(0)).to.be.eq(0);
-      expect(await solution.getNoCounter(0)).to.be.eq(0);
-      expect(await solution.getTotalVoted(0)).to.be.eq(0);
+      expect(await solution.getYesCounter(1)).to.be.eq(0);
+      expect(await solution.getNoCounter(1)).to.be.eq(0);
+      expect(await solution.getTotalVoted(1)).to.be.eq(0);
     });
     it("Verify reward storage", async function () {
-      expect(reward.id).to.be.eq(0);
+      expect(reward.id).to.be.eq(1);
       expect(reward.withdrawAmount).to.be.eq(parseEther("5"));
       expect(reward.withdrawDuration).to.be.eq(250);
       expect(reward.pollId).to.be.eq(0);
@@ -261,18 +261,18 @@ describe("Test AddReward", function () {
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
 
-      tx = await solution.votePoll(0, false);
+      tx = await solution.votePoll(1, false);
       await ethers.provider.send("evm_increaseTime", [180]);
-      await solution.finalizePoll(0);
-      reward = await solution.getReward(0);
+      await solution.finalizePoll(1);
+      reward = await solution.getReward(1);
     });
     it("Verify basepoll storage", async function () {
-      expect(await solution.getYesCounter(0)).to.be.eq(0);
-      expect(await solution.getNoCounter(0)).to.be.eq(0);
-      expect(await solution.getTotalVoted(0)).to.be.eq(0);
+      expect(await solution.getYesCounter(1)).to.be.eq(0);
+      expect(await solution.getNoCounter(1)).to.be.eq(0);
+      expect(await solution.getTotalVoted(1)).to.be.eq(0);
     });
     it("Verify reward storage", async function () {
-      expect(reward.id).to.be.eq(0);
+      expect(reward.id).to.be.eq(1);
       expect(reward.withdrawAmount).to.be.eq("0");
       expect(reward.withdrawDuration).to.be.eq(0);
       expect(reward.pollId).to.be.eq(0);

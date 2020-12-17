@@ -65,7 +65,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         require(_withdrawAmount != DISABLE_REWARD, "NOT_VALID");
         LibAssetPoolStorage.Reward memory reward;
 
-        reward.id = LibAssetPoolStorage.apStorage().rewards.length;
+        reward.id = LibAssetPoolStorage.apStorage().rewards.length + 1;
         reward.state = LibAssetPoolStorage.RewardState.Disabled;
         reward.pollId = _createRewardPoll(
             reward.id,
@@ -88,15 +88,12 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
     ) public override onlyOwner {
         // todo verify amount
         require(_isMember(_msgSender()), "NOT_MEMBER");
-        LibAssetPoolStorage.Reward memory current = LibAssetPoolStorage
+        LibAssetPoolStorage.Reward storage reward = LibAssetPoolStorage
             .apStorage()
-            .rewards[_id];
-
-        LibBasePollStorage.BasePollStorage storage poll = LibBasePollStorage
-            .basePollStorageId(_id);
+            .rewards[_id - 1];
 
         // storage will be deleted (e.g. set to default) after poll is finalized
-        require(poll.endTime == 0, "IS_NOT_FINALIZED");
+        require(reward.pollId == 0, "IS_NOT_FINALIZED");
         // setting both params to initial state is not allowed
         // this is a reserverd state for new rewards
         require(
@@ -106,23 +103,27 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
 
         require(
             !(_withdrawAmount == ENABLE_REWARD &&
-                current.state == LibAssetPoolStorage.RewardState.Enabled),
+                reward.state == LibAssetPoolStorage.RewardState.Enabled),
             "ALREADY_ENABLED"
         );
 
         require(
             !(_withdrawAmount == DISABLE_REWARD &&
-                current.state == LibAssetPoolStorage.RewardState.Disabled),
+                reward.state == LibAssetPoolStorage.RewardState.Disabled),
             "ALREADY_DISABLED"
         );
 
         require(
-            !(current.withdrawAmount == _withdrawAmount &&
-                current.withdrawDuration == _withdrawDuration),
+            !(reward.withdrawAmount == _withdrawAmount &&
+                reward.withdrawDuration == _withdrawDuration),
             "IS_EQUAL"
         );
 
-        _createRewardPoll(_id, _withdrawAmount, _withdrawDuration);
+        reward.pollId = _createRewardPoll(
+            _id,
+            _withdrawAmount,
+            _withdrawDuration
+        );
     }
 
     /**
@@ -136,7 +137,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
 
         LibAssetPoolStorage.Reward memory current = LibAssetPoolStorage
             .apStorage()
-            .rewards[_id];
+            .rewards[_id - 1];
 
         require(
             current.state == LibAssetPoolStorage.RewardState.Enabled,
@@ -170,6 +171,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
     ) internal returns (uint256) {
         LibAssetPoolStorage.APstorage storage apst = LibAssetPoolStorage
             .apStorage();
+        apst.pollCounter = apst.pollCounter + 1;
 
 
             LibBasePollStorage.BasePollStorage storage baseStorage
@@ -187,8 +189,6 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         wpStorage.beneficiary = _beneficiary;
 
         emit WithdrawPollCreated(apst.pollCounter, _beneficiary);
-
-        apst.pollCounter = apst.pollCounter + 1;
         return baseStorage.id;
     }
 
@@ -205,6 +205,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
     ) internal returns (uint256) {
         LibAssetPoolStorage.APstorage storage apst = LibAssetPoolStorage
             .apStorage();
+        apst.pollCounter = apst.pollCounter + 1;
 
 
             LibBasePollStorage.BasePollStorage storage baseStorage
@@ -227,7 +228,6 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
             _id,
             _withdrawAmount
         );
-        apst.pollCounter = apst.pollCounter + 1;
         return baseStorage.id;
     }
 }

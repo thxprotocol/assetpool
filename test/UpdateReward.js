@@ -8,7 +8,7 @@ const {
   DISABLE_REWARD,
 } = require("./utils.js");
 
-describe.only("Test UpdateReward", function () {
+describe("Test UpdateReward", function () {
   let AssetPool;
 
   let gasStation;
@@ -66,27 +66,27 @@ describe.only("Test UpdateReward", function () {
     await token.transfer(solution.address, parseEther("1000"));
 
     await solution.addReward(parseEther("5"), 250);
-    tx = await solution.votePoll(0, true);
+    tx = await solution.votePoll(1, true);
     await ethers.provider.send("evm_increaseTime", [180]);
-    await solution.finalizePoll(0);
-    reward = await solution.getReward(0);
+    await solution.finalizePoll(1);
+    reward = await solution.getReward(1);
   });
   it("Verify updateReward storage contract", async function () {
     expect(reward.pollId).to.be.eq(0);
-    tx = await solution.updateReward(0, parseEther("5"), 300);
+    tx = await solution.updateReward(1, parseEther("5"), 300);
     rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
       .timestamp;
-    reward = await solution.getReward(0);
-    expect(reward.pollId).to.be.eq(0);
+    reward = await solution.getReward(1);
+    expect(reward.pollId).to.be.eq(2);
 
-    expect(await solution.getWithdrawAmount(1)).to.be.eq(parseEther("5"));
-    expect(await solution.getWithdrawDuration(1)).to.be.eq(300);
-    expect(await solution.getRewardIndex(1)).to.be.eq(0);
-    expect(await solution.getStartTime(1)).to.be.eq(rewardTimestamp);
-    expect(await solution.getEndTime(1)).to.be.eq(rewardTimestamp + 180);
-    expect(await solution.getYesCounter(1)).to.be.eq(0);
-    expect(await solution.getNoCounter(1)).to.be.eq(0);
-    expect(await solution.getTotalVoted(1)).to.be.eq(0);
-    expect(await solution.getCurrentApprovalState(1)).to.be.eq(false);
+    expect(await solution.getWithdrawAmount(2)).to.be.eq(parseEther("5"));
+    expect(await solution.getWithdrawDuration(2)).to.be.eq(300);
+    expect(await solution.getRewardIndex(2)).to.be.eq(1);
+    expect(await solution.getStartTime(2)).to.be.eq(rewardTimestamp);
+    expect(await solution.getEndTime(2)).to.be.eq(rewardTimestamp + 180);
+    expect(await solution.getYesCounter(2)).to.be.eq(0);
+    expect(await solution.getNoCounter(2)).to.be.eq(0);
+    expect(await solution.getTotalVoted(2)).to.be.eq(0);
+    expect(await solution.getCurrentApprovalState(2)).to.be.eq(false);
   });
 });
