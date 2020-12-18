@@ -123,7 +123,7 @@ describe("Test AddReward", function () {
       expect(await solution.getTotalVoted(1)).to.be.eq(0);
     });
     it("Verify current approval state", async function () {
-      expect(await solution.getCurrentApprovalState(1)).to.be.eq(false);
+      expect(await solution.rewardPollApprovalState(1)).to.be.eq(false);
     });
   });
   describe("Vote reward", async function () {
@@ -147,7 +147,7 @@ describe("Test AddReward", function () {
         .timestamp;
       reward = await solution.getReward(1);
 
-      tx = await solution.votePoll(1, true);
+      tx = await solution.rewardPollVote(1, true);
       voteTxTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
     });
@@ -162,13 +162,15 @@ describe("Test AddReward", function () {
       expect(vote.agree).to.be.eq(true);
     });
     it("Verify current approval state", async function () {
-      expect(await solution.getCurrentApprovalState(1)).to.be.eq(true);
+      expect(await solution.rewardPollApprovalState(1)).to.be.eq(true);
     });
     it("Voting twice not possible", async function () {
-      await expect(solution.votePoll(1, true)).to.be.revertedWith("HAS_VOTED");
+      await expect(solution.rewardPollVote(1, true)).to.be.revertedWith(
+        "HAS_VOTED"
+      );
     });
     it("Revoke vote", async function () {
-      await solution.revokeVotePoll(1);
+      await solution.rewardPollRevokeVote(1);
       expect(await solution.getYesCounter(1)).to.be.eq(0);
       expect(await solution.getNoCounter(1)).to.be.eq(0);
       expect(await solution.getTotalVoted(1)).to.be.eq(0);
@@ -179,14 +181,14 @@ describe("Test AddReward", function () {
       expect(vote.agree).to.be.eq(false);
     });
     it("Revoke twice", async function () {
-      await solution.revokeVotePoll(1);
-      await expect(solution.revokeVotePoll(1)).to.be.revertedWith(
+      await solution.rewardPollRevokeVote(1);
+      await expect(solution.rewardPollRevokeVote(1)).to.be.revertedWith(
         "HAS_NOT_VOTED"
       );
     });
     it("Revoke + vote again(st)", async function () {
-      await solution.revokeVotePoll(1);
-      tx = await solution.votePoll(1, false);
+      await solution.rewardPollRevokeVote(1);
+      tx = await solution.rewardPollVote(1, false);
       voteTxTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
       expect(await solution.getYesCounter(1)).to.be.eq(0);
@@ -200,7 +202,9 @@ describe("Test AddReward", function () {
     });
     it("Finalizing not possible", async function () {
       // if this one fails, please check timestmap first
-      await expect(solution.finalizePoll(1)).to.be.revertedWith("WRONG_STATE");
+      await expect(solution.rewardPollFinalize(1)).to.be.revertedWith(
+        "WRONG_STATE"
+      );
     });
   });
   describe("Finalize reward (approved)", async function () {
@@ -223,9 +227,9 @@ describe("Test AddReward", function () {
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
 
-      tx = await solution.votePoll(1, true);
+      tx = await solution.rewardPollVote(1, true);
       await ethers.provider.send("evm_increaseTime", [180]);
-      await solution.finalizePoll(1);
+      await solution.rewardPollFinalize(1);
       reward = await solution.getReward(1);
     });
     it("Verify basepoll storage", async function () {
@@ -261,9 +265,9 @@ describe("Test AddReward", function () {
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
 
-      tx = await solution.votePoll(1, false);
+      tx = await solution.rewardPollVote(1, false);
       await ethers.provider.send("evm_increaseTime", [180]);
-      await solution.finalizePoll(1);
+      await solution.rewardPollFinalize(1);
       reward = await solution.getReward(1);
     });
     it("Verify basepoll storage", async function () {

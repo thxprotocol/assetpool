@@ -61,6 +61,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
         onlyOwner
     {
         // TODO allow reward 0?
+        require(_withdrawAmount != 0, "NOT_VALID");
         require(_withdrawAmount != ENABLE_REWARD, "NOT_VALID");
         require(_withdrawAmount != DISABLE_REWARD, "NOT_VALID");
         LibAssetPoolStorage.Reward memory reward;

@@ -10,6 +10,10 @@ import "../GasStationFacet/RelayReceiver.sol";
 abstract contract BasePoll is RelayReceiver {
     using SafeMath for uint256;
 
+    function onPollFinish(uint256 _id) internal virtual;
+
+    function voteValidate(bool _agree, address _voter) internal virtual;
+
     modifier checkTime() {
         LibBasePollStorage.BasePollStorage storage bData = baseData();
         require(
@@ -23,7 +27,7 @@ abstract contract BasePoll is RelayReceiver {
     /**
      * Finalize poll and call onPollFinish callback with result
      */
-    function finalize() public {
+    function finalize() internal {
         LibBasePollStorage.BasePollStorage storage bData = baseData();
         require(block.timestamp >= bData.endTime, "WRONG_STATE");
         onPollFinish(bData.id);
@@ -36,28 +40,15 @@ abstract contract BasePoll is RelayReceiver {
         //delete bData.votesByAddress;
     }
 
-    function onPollFinish(uint256 _id) internal virtual;
-
-    function _getCurrentApprovalState() public view returns (bool) {
-        LibBasePollStorage.BasePollStorage storage bData = baseData();
-        return bData.yesCounter > bData.noCounter;
-    }
-
     /**
      * @dev callback called after poll finalization
      * @param _agree True if user endorses the proposal else False
      */
-    function vote(bool _agree) external virtual;
-
-    /**
-     * @dev Process user`s vote
-     * @param _agree True if user endorses the proposal else False
-     * @param _voter The address of the voter
-     */
-    function _vote(bool _agree, address _voter) internal checkTime {
+    function vote(bool _agree) internal checkTime {
+        voteValidate(_agree, _msgSender());
         LibBasePollStorage.BasePollStorage storage bData = baseData();
 
-        require(bData.votesByAddress[_voter].time == 0, "HAS_VOTED");
+        require(bData.votesByAddress[_msgSender()].time == 0, "HAS_VOTED");
         uint256 voiceWeight = 1;
 
         if (_agree) {
@@ -66,9 +57,9 @@ abstract contract BasePoll is RelayReceiver {
             bData.noCounter = bData.noCounter.add(voiceWeight);
         }
 
-        bData.votesByAddress[_voter].time = block.timestamp;
-        bData.votesByAddress[_voter].weight = voiceWeight;
-        bData.votesByAddress[_voter].agree = _agree;
+        bData.votesByAddress[_msgSender()].time = block.timestamp;
+        bData.votesByAddress[_msgSender()].weight = voiceWeight;
+        bData.votesByAddress[_msgSender()].agree = _agree;
 
         bData.totalVoted = bData.totalVoted.add(1);
     }
@@ -76,7 +67,7 @@ abstract contract BasePoll is RelayReceiver {
     /**
      * @dev Revoke user`s vote
      */
-    function revokeVote() external checkTime {
+    function revokeVote() internal checkTime {
         LibBasePollStorage.BasePollStorage storage bData = baseData();
         address _voter = _msgSender();
 

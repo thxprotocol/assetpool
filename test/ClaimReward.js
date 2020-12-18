@@ -45,9 +45,9 @@ describe("Test ClaimReward(for), storage/access", function () {
       rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
         .timestamp;
 
-      tx = await solution.votePoll(1, true);
+      tx = await solution.rewardPollVote(1, true);
       await ethers.provider.send("evm_increaseTime", [180]);
-      await solution.finalizePoll(1);
+      await solution.rewardPollFinalize(1);
     })
   );
   it("Test claimReward", async function () {
@@ -72,7 +72,7 @@ describe("Test ClaimReward(for), storage/access", function () {
     expect(await solution.getTotalVoted(2)).to.be.eq(0);
   });
   it("Verify current approval state", async function () {
-    expect(await solution.getCurrentApprovalState(2)).to.be.eq(false);
+    expect(await solution.rewardPollApprovalState(2)).to.be.eq(false);
   });
   it("Claim reward as non member", async function () {
     await expect(solution.connect(voter).claimReward(1)).to.be.revertedWith(
@@ -92,12 +92,14 @@ describe("Test ClaimReward(for), storage/access", function () {
   it("Claim non reward", async function () {
     await expect(solution.connect(owner).claimReward(2)).to.be.reverted;
   });
-  // it("Claim disabled reward", async function () {
-  //   tx = await solution.updateReward(0, DISABLE_REWARD, 0);
-  //   tx = await tx.wait();
-  //   const pollid = tx.events[0].args.id;
-  //   await solution.votePoll(pollid, true);
-  //   await ethers.provider.send("evm_increaseTime", [180]);
-  //   await solution.finalizePoll(pollid);
-  // });
+  it("Claim disabled reward", async function () {
+    tx = await solution.updateReward(1, DISABLE_REWARD, 0);
+    tx = await tx.wait();
+    const pollid = tx.events[0].args.id;
+    await solution.rewardPollVote(pollid, true);
+    await ethers.provider.send("evm_increaseTime", [180]);
+    await solution.rewardPollFinalize(pollid);
+
+    await expect(solution.claimReward(1)).to.be.revertedWith("IS_NOT_ENABLED");
+  });
 });

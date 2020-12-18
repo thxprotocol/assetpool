@@ -85,6 +85,10 @@ module.exports = {
     OwnershipFacet = await ethers.getContractFactory("OwnershipFacet");
     GasStationFacet = await ethers.getContractFactory("GasStationFacet");
     RewardPollFacet = await ethers.getContractFactory("RewardPollFacet");
+    RewardPollProxyFacet = await ethers.getContractFactory(
+      "RewardPollProxyFacet"
+    );
+    WithdrawPollFacet = await ethers.getContractFactory("WithdrawPollFacet");
     PollProxyFacet = await ethers.getContractFactory("PollProxyFacet");
 
     AssetPoolFactory = await ethers.getContractFactory("AssetPoolFactory");
@@ -97,6 +101,8 @@ module.exports = {
     ownershipFacet = await OwnershipFacet.deploy();
     gasStationFacet = await GasStationFacet.deploy();
     rewardPollFacet = await RewardPollFacet.deploy();
+    rewardPollProxyFacet = await RewardPollProxyFacet.deploy();
+    withdrawPollFacet = await WithdrawPollFacet.deploy();
     pollProxyFacet = await PollProxyFacet.deploy();
 
     diamondCut = [
@@ -132,6 +138,16 @@ module.exports = {
       },
       {
         action: FacetCutAction.Add,
+        facetAddress: rewardPollProxyFacet.address,
+        functionSelectors: getSelectors(rewardPollProxyFacet),
+      },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: withdrawPollFacet.address,
+        functionSelectors: getSelectors(withdrawPollFacet),
+      },
+      {
+        action: FacetCutAction.Add,
         facetAddress: pollProxyFacet.address,
         functionSelectors: getSelectors(pollProxyFacet),
       },
@@ -146,6 +162,23 @@ module.exports = {
         functionSelectors: getSelectors(rolesFacet),
       },
     ];
+    all = [];
+    for (facet in diamondCut) {
+      for (func in diamondCut[facet].functionSelectors) {
+        const elem = diamondCut[facet].functionSelectors[func];
+        if (all.includes(elem)) {
+          console.error("facet", facet, "func", elem);
+          for (const key of Object.keys(rewardPollFacet.functions)) {
+            console.error(key);
+            console.error(
+              utils.keccak256(utils.toUtf8Bytes(key)).substr(0, 10)
+            );
+          }
+          break;
+        }
+        all.push(elem);
+      }
+    }
     return await AssetPoolFactory.deploy(diamondCut);
   },
   RewardState: {

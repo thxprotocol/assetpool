@@ -2,6 +2,7 @@
 pragma solidity ^0.7.4;
 
 import "./LibRewardPollStorage.sol";
+import "./LibBasePollStorage.sol";
 import "./BasePoll.sol";
 import "../RolesFacet/RolesView.sol";
 import "hardhat/console.sol";
@@ -12,12 +13,8 @@ contract RewardPollFacet is BasePoll, RolesView {
     uint256 constant ENABLE_REWARD = 2**250;
     uint256 constant DISABLE_REWARD = 2**251;
 
-    event Sender(address sender);
-
-    function vote(bool _agree) external override {
-        address _voter = _msgSender();
+    function voteValidate(bool _agree, address _voter) internal override {
         require(_isMember(_voter), "NO_MEMBER");
-        _vote(_agree, _voter);
     }
 
     /**
@@ -31,7 +28,7 @@ contract RewardPollFacet is BasePoll, RolesView {
             .apStorage()
             .rewards[rwPollData.rewardIndex];
 
-        bool approved = _getCurrentApprovalState();
+        bool approved = _rewardPollApprovalState();
         if (approved) {
             if (rwPollData.withdrawAmount == ENABLE_REWARD) {
                 rwAssetPool.state = LibAssetPoolStorage.RewardState.Enabled;
@@ -53,5 +50,32 @@ contract RewardPollFacet is BasePoll, RolesView {
         delete rwAssetPool.pollId;
         delete rwPollData.withdrawAmount;
         delete rwPollData.withdrawDuration;
+    }
+
+    modifier isReward {
+        LibBasePollStorage.BasePollStorage storage bData = baseData();
+
+        LibRewardPollStorage.RPStorage storage rwPollData = LibRewardPollStorage
+            .rpStorageId(bData.id);
+
+        require(rwPollData.withdrawAmount != 0, "NOT_REWARD_POLL");
+        _;
+    }
+
+    function _rewardPollVote(bool _agree) external isReward {
+        vote(_agree);
+    }
+
+    function _rewardPollRevokeVote() external isReward {
+        revokeVote();
+    }
+
+    function _rewardPollFinalize() external isReward {
+        finalize();
+    }
+
+    function _rewardPollApprovalState() public view isReward returns (bool) {
+        LibBasePollStorage.BasePollStorage storage bData = baseData();
+        return bData.yesCounter > bData.noCounter;
     }
 }
