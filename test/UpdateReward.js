@@ -76,12 +76,75 @@ describe("Test UpdateReward", function () {
     expect(await solution.getCurrentApprovalState(2)).to.be.eq(false);
   });
   it("approve", async function () {
-    reward = await updateReward(1, parseEther("10"), 300, true);
+    reward = await updateReward(1, parseEther("10"), 100, true);
 
     expect(reward.id).to.be.eq(1);
     expect(reward.pollId).to.be.eq(0);
     expect(reward.withdrawAmount).to.be.eq(parseEther("10"));
-    expect(reward.withdrawDuration).to.be.eq(300);
+    expect(reward.withdrawDuration).to.be.eq(100);
     expect(reward.state).to.be.eq(RewardState.Enabled);
+  });
+  it("decline", async function () {
+    reward = await updateReward(1, parseEther("10"), 100, false);
+
+    expect(reward.id).to.be.eq(1);
+    expect(reward.pollId).to.be.eq(0);
+    expect(reward.withdrawAmount).to.be.eq(parseEther("5"));
+    expect(reward.withdrawDuration).to.be.eq(250);
+    expect(reward.state).to.be.eq(RewardState.Enabled);
+  });
+  it("Initial values", async function () {
+    await expect(updateReward(1, 0, 0, false)).to.be.revertedWith(
+      "NOT_ALLOWED"
+    );
+  });
+  it("Partial initial values", async function () {
+    await updateReward(1, 1, 0, false);
+    await updateReward(1, 1, 1, false);
+  });
+  it("revert ENABLE reward", async function () {
+    await expect(updateReward(1, ENABLE_REWARD, 0, false)).to.be.revertedWith(
+      "ALREADY_ENABLED"
+    );
+  });
+  it("DISABLE reward", async function () {
+    reward = await updateReward(1, DISABLE_REWARD, 0, true);
+
+    expect(reward.id).to.be.eq(1);
+    expect(reward.pollId).to.be.eq(0);
+    expect(reward.withdrawAmount).to.be.eq(parseEther("5"));
+    expect(reward.withdrawDuration).to.be.eq(250);
+    expect(reward.state).to.be.eq(RewardState.Disabled);
+  });
+  it("revert DISABLE reward", async function () {
+    reward = await updateReward(1, DISABLE_REWARD, 0, true);
+    await expect(updateReward(1, DISABLE_REWARD, 0, true)).to.be.revertedWith(
+      "ALREADY_DISABLED"
+    );
+  });
+  it("revert equal params", async function () {
+    await expect(
+      updateReward(1, parseEther("5"), 250, true)
+    ).to.be.revertedWith("IS_EQUAL");
+  });
+  it("DISABLE + ENABLE reward", async function () {
+    await updateReward(1, DISABLE_REWARD, 0, true);
+    reward = await updateReward(1, ENABLE_REWARD, 0, true);
+
+    expect(reward.id).to.be.eq(1);
+    expect(reward.pollId).to.be.eq(0);
+    expect(reward.withdrawAmount).to.be.eq(parseEther("5"));
+    expect(reward.withdrawDuration).to.be.eq(250);
+    expect(reward.state).to.be.eq(RewardState.Enabled);
+  });
+  it("Update disabled reward", async function () {
+    await updateReward(1, DISABLE_REWARD, 0, true);
+    reward = await updateReward(1, parseEther("50"), 120, true);
+
+    expect(reward.id).to.be.eq(1);
+    expect(reward.pollId).to.be.eq(0);
+    expect(reward.withdrawAmount).to.be.eq(parseEther("50"));
+    expect(reward.withdrawDuration).to.be.eq(120);
+    expect(reward.state).to.be.eq(RewardState.Disabled);
   });
 });
