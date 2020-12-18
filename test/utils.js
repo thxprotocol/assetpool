@@ -89,6 +89,9 @@ module.exports = {
       "RewardPollProxyFacet"
     );
     WithdrawPollFacet = await ethers.getContractFactory("WithdrawPollFacet");
+    WithdrawPollProxyFacet = await ethers.getContractFactory(
+      "WithdrawPollProxyFacet"
+    );
     PollProxyFacet = await ethers.getContractFactory("PollProxyFacet");
 
     AssetPoolFactory = await ethers.getContractFactory("AssetPoolFactory");
@@ -103,6 +106,7 @@ module.exports = {
     rewardPollFacet = await RewardPollFacet.deploy();
     rewardPollProxyFacet = await RewardPollProxyFacet.deploy();
     withdrawPollFacet = await WithdrawPollFacet.deploy();
+    withdrawPollProxyFacet = await WithdrawPollProxyFacet.deploy();
     pollProxyFacet = await PollProxyFacet.deploy();
 
     diamondCut = [
@@ -140,6 +144,11 @@ module.exports = {
         action: FacetCutAction.Add,
         facetAddress: rewardPollProxyFacet.address,
         functionSelectors: getSelectors(rewardPollProxyFacet),
+      },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: withdrawPollProxyFacet.address,
+        functionSelectors: getSelectors(withdrawPollProxyFacet),
       },
       {
         action: FacetCutAction.Add,

@@ -41,7 +41,7 @@ describe("Test UpdateReward", function () {
     tx = await assetPoolFactory.deployAssetPool(
       await owner.getAddress(),
       await owner.getAddress(),
-      await owner.getAddress()
+      token.address
     );
     tx = await tx.wait();
     diamond = tx.events[tx.events.length - 1].args.assetPool;
@@ -146,79 +146,5 @@ describe("Test UpdateReward", function () {
     expect(reward.withdrawAmount).to.be.eq(parseEther("50"));
     expect(reward.withdrawDuration).to.be.eq(120);
     expect(reward.state).to.be.eq(RewardState.Disabled);
-  });
-});
-
-describe("Test ClaimReward(for), flow", function () {
-  // only testing rewardpoll (not basepoll)
-  let AssetPool;
-
-  let gasStation;
-  let owner;
-  let voter;
-  let token;
-  let assetPool;
-  let reward;
-  let withdrawId;
-  let _beforeDeployment;
-
-  let withdrawPoll;
-  let withdrawTimestamp;
-  beforeEach(
-    (_beforeDeployment = async function () {
-      [owner, voter] = await ethers.getSigners();
-      const THXToken = await ethers.getContractFactory("ExampleToken");
-      token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
-      assetPoolFactory = await deployBasics(ethers, owner, voter);
-      tx = await assetPoolFactory.deployAssetPool(
-        await owner.getAddress(),
-        await owner.getAddress(),
-        await owner.getAddress()
-      );
-      tx = await tx.wait();
-      diamond = tx.events[tx.events.length - 1].args.assetPool;
-      solution = await ethers.getContractAt("ISolution", diamond);
-      await solution.addManager(voter.getAddress());
-      await solution.setProposeWithdrawPollDuration(180);
-      await solution.setRewardPollDuration(180);
-      await token.transfer(solution.address, parseEther("1000"));
-
-      await solution.addReward(parseEther("5"), 250);
-      tx = await solution.rewardPollVote(1, true);
-      await ethers.provider.send("evm_increaseTime", [180]);
-      await solution.rewardPollFinalize(1);
-
-      tx = await solution.connect(voter).claimReward(1);
-      logs = await tx.wait();
-      withdrawId = logs.events[0].args.id;
-    })
-  );
-  it("Claim reward, no manager", async function () {
-    // TODO, check roles
-    // await expect(solution.rewardPollVote(withdrawId, true)).to.be.revertedWith(
-    //   "NO_MANAGER"
-    // );
-  });
-  it("Claim reward", async function () {
-    await solution.rewardPollVote(withdrawId, true);
-    await ethers.provider.send("evm_increaseTime", [250]);
-    await solution.rewardPollFinalize(withdrawId);
-    expect(await token.balanceOf(await voter.getAddress())).to.be.eq(
-      parseEther("5")
-    );
-    expect(await token.balanceOf(await solution.address)).to.be.eq(
-      parseEther("995")
-    );
-  });
-  it("Claim reward rejected", async function () {
-    await solution.rewardPollVote(withdrawId, false);
-    await ethers.provider.send("evm_increaseTime", [250]);
-    await solution.rewardPollFinalize(withdrawId);
-    expect(await token.balanceOf(await voter.getAddress())).to.be.eq(
-      parseEther("0")
-    );
-    expect(await token.balanceOf(await solution.address)).to.be.eq(
-      parseEther("1000")
-    );
   });
 });

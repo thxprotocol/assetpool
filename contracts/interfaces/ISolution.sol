@@ -6,6 +6,7 @@ import "./IGasStation.sol";
 import "./IRewardPoll.sol";
 import "./IRewardPollFacet.sol";
 import "./IWithdrawPoll.sol";
+import "./IWithdrawPollFacet.sol";
 import "./IBasePoll.sol";
 import "./IAssetPool.sol";
 import "./IAssetPoolView.sol";
@@ -23,6 +24,7 @@ interface ISolution is
     IRewardPoll,
     IRewardPollFacet,
     IWithdrawPoll,
+    IWithdrawPollFacet,
     IAssetPool,
     IAssetPoolView,
     IRoles
