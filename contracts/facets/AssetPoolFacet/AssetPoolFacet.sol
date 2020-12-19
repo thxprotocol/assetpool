@@ -160,6 +160,26 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
     }
 
     /**
+     * @dev Creates a custom withdraw proposal.
+     * @param _amount Size of the withdrawal
+     * @param _beneficiary Address of the beneficiary
+     */
+    function proposeWithdraw(uint256 _amount, address _beneficiary)
+        external
+        override
+    {
+        // TODO verify amount
+        require(_isMember(_msgSender()), "NOT_MEMBER");
+        require(_isMember(_beneficiary), "NOT_MEMBER");
+
+        _createWithdrawPoll(
+            _amount,
+            LibAssetPoolStorage.apStorage().proposeWithdrawPollDuration,
+            _beneficiary
+        );
+    }
+
+    /**
      * @dev Starts a withdraw poll.
      * @param _amount Size of the withdrawal
      * @param _duration The duration the withdraw poll

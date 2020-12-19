@@ -30,4 +30,6 @@ interface IAssetPool {
     function claimRewardFor(uint256 _id, address _beneficiary) external;
 
     function claimReward(uint256 _id) external;
+
+    function proposeWithdraw(uint256 _amount, address _beneficiary) external;
 }

@@ -63,6 +63,11 @@ module.exports = {
       };
     }
   },
+  events: async (tx) => {
+    tx = await tx;
+    tx = await tx.wait();
+    return tx.events;
+  },
   deployBasics: async (ethers, owner, voter) => {
     FacetCutAction = {
       Add: 0,
