@@ -1,7 +1,8 @@
 const { expect } = require("chai");
 const { parseEther } = require("ethers/lib/utils");
 const {
-  helpSign,
+  timestamp,
+  events,
   deployBasics,
   RewardState,
   ENABLE_REWARD,
@@ -28,22 +29,23 @@ describe("Test ClaimReward(for), storage/access", function () {
       const THXToken = await ethers.getContractFactory("ExampleToken");
       token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
       assetPoolFactory = await deployBasics(ethers, owner, voter);
-      tx = await assetPoolFactory.deployAssetPool(
-        await owner.getAddress(),
-        await owner.getAddress(),
-        token.address
+      ev = await events(
+        assetPoolFactory.deployAssetPool(
+          await owner.getAddress(),
+          await owner.getAddress(),
+          await owner.getAddress()
+        )
       );
-      tx = await tx.wait();
-      diamond = tx.events[tx.events.length - 1].args.assetPool;
+      diamond = ev[ev.length - 1].args.assetPool;
       solution = await ethers.getContractAt("ISolution", diamond);
       //await solution.addManager(voter.getAddress());
       await solution.setProposeWithdrawPollDuration(180);
       await solution.setRewardPollDuration(180);
       await token.transfer(solution.address, parseEther("1000"));
 
-      tx = await solution.addReward(parseEther("5"), 250);
-      rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
-        .timestamp;
+      rewardTimestamp = await timestamp(
+        solution.addReward(parseEther("5"), 250)
+      );
 
       tx = await solution.rewardPollVote(1, true);
       await ethers.provider.send("evm_increaseTime", [180]);
@@ -51,14 +53,13 @@ describe("Test ClaimReward(for), storage/access", function () {
     })
   );
   it("Test claimReward", async function () {
-    tx = await solution.claimReward(1);
-    withdrawTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
-      .timestamp;
-    tx = await tx.wait();
-    const member = tx.events[0].args.member;
-    const id = tx.events[0].args.id;
+    ev = await events(solution.claimReward(1));
+    const member = ev[0].args.member;
+    const id = ev[0].args.id;
     expect(member).to.be.eq(await owner.getAddress());
     expect(id).to.be.eq(2);
+
+    withdrawTimestamp = (await ev[0].getBlock()).timestamp;
   });
   it("withdrawPoll storage", async function () {
     expect(await solution.getBeneficiary(2)).to.be.eq(await owner.getAddress());
@@ -93,9 +94,8 @@ describe("Test ClaimReward(for), storage/access", function () {
     await expect(solution.connect(owner).claimReward(2)).to.be.reverted;
   });
   it("Claim disabled reward", async function () {
-    tx = await solution.updateReward(1, DISABLE_REWARD, 0);
-    tx = await tx.wait();
-    const pollid = tx.events[0].args.id;
+    ev = await events(solution.updateReward(1, DISABLE_REWARD, 0));
+    const pollid = ev[0].args.id;
     await solution.rewardPollVote(pollid, true);
     await ethers.provider.send("evm_increaseTime", [180]);
     await solution.rewardPollFinalize(pollid);
@@ -125,13 +125,14 @@ describe("Test ClaimReward(for), flow", function () {
       const THXToken = await ethers.getContractFactory("ExampleToken");
       token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
       assetPoolFactory = await deployBasics(ethers, owner, voter);
-      tx = await assetPoolFactory.deployAssetPool(
-        await owner.getAddress(),
-        await owner.getAddress(),
-        token.address
+      ev = await events(
+        assetPoolFactory.deployAssetPool(
+          await owner.getAddress(),
+          await owner.getAddress(),
+          token.address
+        )
       );
-      tx = await tx.wait();
-      diamond = tx.events[tx.events.length - 1].args.assetPool;
+      diamond = ev[ev.length - 1].args.assetPool;
       solution = await ethers.getContractAt("ISolution", diamond);
       await solution.addManager(voter.getAddress());
       await solution.setProposeWithdrawPollDuration(180);
@@ -143,9 +144,8 @@ describe("Test ClaimReward(for), flow", function () {
       await ethers.provider.send("evm_increaseTime", [180]);
       await solution.rewardPollFinalize(1);
 
-      tx = await solution.connect(voter).claimReward(1);
-      logs = await tx.wait();
-      withdrawId = logs.events[0].args.id;
+      ev = await events(solution.connect(voter).claimReward(1));
+      withdrawId = ev[0].args.id;
     })
   );
   it("Claim reward, no manager", async function () {

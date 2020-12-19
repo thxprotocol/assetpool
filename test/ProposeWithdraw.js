@@ -27,13 +27,14 @@ describe("Test ClaimReward(for), storage/access", function () {
       const THXToken = await ethers.getContractFactory("ExampleToken");
       token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
       assetPoolFactory = await deployBasics(ethers, owner, voter);
-      tx = await assetPoolFactory.deployAssetPool(
-        await owner.getAddress(),
-        await owner.getAddress(),
-        token.address
+      ev = await events(
+        assetPoolFactory.deployAssetPool(
+          await owner.getAddress(),
+          await owner.getAddress(),
+          await owner.getAddress()
+        )
       );
-      tx = await tx.wait();
-      diamond = tx.events[tx.events.length - 1].args.assetPool;
+      diamond = ev[ev.length - 1].args.assetPool;
       solution = await ethers.getContractAt("ISolution", diamond);
       //await solution.addManager(voter.getAddress());
       await solution.addMember(await poolMember.getAddress());

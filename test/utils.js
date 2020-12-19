@@ -68,6 +68,11 @@ module.exports = {
     tx = await tx.wait();
     return tx.events;
   },
+  timestamp: async (tx) => {
+    tx = await tx;
+    tx = await tx.wait();
+    return (await ethers.provider.getBlock(tx.blockNumber)).timestamp;
+  },
   deployBasics: async (ethers, owner, voter) => {
     FacetCutAction = {
       Add: 0,

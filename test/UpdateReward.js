@@ -1,11 +1,12 @@
 const { expect } = require("chai");
 const { parseEther } = require("ethers/lib/utils");
 const {
-  helpSign,
   deployBasics,
+  events,
   RewardState,
   ENABLE_REWARD,
   DISABLE_REWARD,
+  timestamp,
 } = require("./utils.js");
 
 describe("Test UpdateReward", function () {
@@ -23,10 +24,9 @@ describe("Test UpdateReward", function () {
   let voteTx;
   let finalizeTx;
   let updateReward = async (id, amount, time, pass) => {
-    tx = await solution.updateReward(id, amount, time);
-    tx = await tx.wait();
+    ev = await events(solution.updateReward(id, amount, time));
 
-    const poll = tx.events[0].args.id;
+    const poll = ev[0].args.id;
     await solution.rewardPollVote(poll, pass);
     await ethers.provider.send("evm_increaseTime", [180]);
     await solution.rewardPollFinalize(poll);
@@ -38,13 +38,14 @@ describe("Test UpdateReward", function () {
     const THXToken = await ethers.getContractFactory("ExampleToken");
     token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
     assetPoolFactory = await deployBasics(ethers, owner, voter);
-    tx = await assetPoolFactory.deployAssetPool(
-      await owner.getAddress(),
-      await owner.getAddress(),
-      token.address
+    ev = await events(
+      assetPoolFactory.deployAssetPool(
+        await owner.getAddress(),
+        await owner.getAddress(),
+        await owner.getAddress()
+      )
     );
-    tx = await tx.wait();
-    diamond = tx.events[tx.events.length - 1].args.assetPool;
+    diamond = ev[ev.length - 1].args.assetPool;
     solution = await ethers.getContractAt("ISolution", diamond);
     //await solution.addManager(voter.getAddress());
     await solution.setProposeWithdrawPollDuration(180);
@@ -59,9 +60,9 @@ describe("Test UpdateReward", function () {
   });
   it("Verify updateReward storage contract", async function () {
     expect(reward.pollId).to.be.eq(0);
-    tx = await solution.updateReward(1, parseEther("5"), 300);
-    rewardTimestamp = (await ethers.provider.getBlock(tx.blockNumber))
-      .timestamp;
+    rewardTimestamp = await timestamp(
+      solution.updateReward(1, parseEther("5"), 300)
+    );
     reward = await solution.getReward(1);
     expect(reward.pollId).to.be.eq(2);
 
