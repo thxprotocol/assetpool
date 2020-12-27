@@ -52,7 +52,7 @@ describe("Test Roles", function () {
       diamond = ev[ev.length - 1].args.assetPool;
       solution = await ethers.getContractAt("ISolution", diamond);
     });
-    it("Test default roles", async function () {
+    it("default roles", async function () {
       const ownerAddress = await owner.getAddress();
 
       expect(await solution.getOwner()).to.eq(ownerAddress); // owner of the diamond
@@ -62,7 +62,7 @@ describe("Test Roles", function () {
       expect(await solution.isMemberRoleAdmin(ownerAddress)).to.eq(true);
       expect(await solution.isManagerRoleAdmin(ownerAddress)).to.eq(true);
     });
-    it("Test addMember", async function () {
+    it("addMember", async function () {
       const voterAddress = await voter.getAddress();
 
       await solution.addMember(voterAddress);
@@ -73,7 +73,7 @@ describe("Test Roles", function () {
         solution.connect(voter).addMember(await other.getAddress())
       ).to.be.revertedWith("AccessControl: sender must be an admin to grant");
     });
-    it("Test addMember directly", async function () {
+    it("addMember directly", async function () {
       const voterAddress = await voter.getAddress();
 
       await solution.grantRole(MEMBER_ROLE, voterAddress);
@@ -84,7 +84,7 @@ describe("Test Roles", function () {
         solution.connect(voter).addMember(await other.getAddress())
       ).to.be.revertedWith("AccessControl: sender must be an admin to grant");
     });
-    it("Test addManager", async function () {
+    it("addManager", async function () {
       const voterAddress = await voter.getAddress();
 
       await solution.addManager(voterAddress);
@@ -95,7 +95,7 @@ describe("Test Roles", function () {
         solution.connect(voter).addMember(await other.getAddress())
       ).to.be.revertedWith("AccessControl: sender must be an admin to grant");
     });
-    it("Test addManager directly", async function () {
+    it("addManager directly", async function () {
       const voterAddress = await voter.getAddress();
 
       await solution.grantRole(MANAGER_ROLE, voterAddress);
@@ -106,7 +106,7 @@ describe("Test Roles", function () {
         solution.connect(voter).addMember(await other.getAddress())
       ).to.be.revertedWith("AccessControl: sender must be an admin to grant");
     });
-    it("Test addAdmin directly", async function () {
+    it("addAdmin directly", async function () {
       const voterAddress = await voter.getAddress();
 
       await solution.grantRole(ADMIN_ROLE, voterAddress);

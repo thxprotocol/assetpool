@@ -7,9 +7,10 @@ import "./BasePoll.sol";
 import "../RolesFacet/RolesView.sol";
 import "hardhat/console.sol";
 import "../GasStationFacet/RelayReceiver.sol";
+import "../../interfaces/IWithdrawPoll.sol";
 import "../AssetPoolFacet/LibAssetPoolStorage.sol";
 
-contract WithdrawPollFacet is BasePoll, RolesView {
+contract WithdrawPollFacet is IWithdrawPoll, BasePoll, RolesView {
     function voteValidate(bool _agree, address _voter) internal override {
         require(_isManager(_voter), "NO_MEMBER");
     }
@@ -39,27 +40,44 @@ contract WithdrawPollFacet is BasePoll, RolesView {
             IERC20 token = LibAssetPoolStorage.apStorage().token;
 
             token.transfer(wpPollData.beneficiary, wpPollData.amount);
-            //emit Withdrawn(wpPollData.beneficiary, wpPollData.amount);
+            emit Withdrawn(_id, wpPollData.beneficiary, wpPollData.amount);
         }
 
+        emit WithdrawPollFinalized(_id, approved);
         delete wpPollData.beneficiary;
         delete wpPollData.amount;
     }
 
-    function _withdrawPollVote(bool _agree) external isWithdraw {
+    function getBeneficiary(uint256 _id)
+        public
+        override
+        view
+        returns (address)
+    {
+        return LibWithdrawPollStorage.wpStorageId(_id).beneficiary;
+    }
+
+    function getAmount(uint256 _id) public override view returns (uint256) {
+        return LibWithdrawPollStorage.wpStorageId(_id).amount;
+    }
+
+    function _withdrawPollVote(bool _agree) external override isWithdraw {
         vote(_agree);
+        emit WithdrawPollVoted( baseData().id, _msgSender(), _agree);
     }
 
-    function _withdrawPollRevokeVote() external isWithdraw {
+    function _withdrawPollRevokeVote() external override isWithdraw {
         revokeVote();
+        emit WithdrawPollRevokedVote(baseData().id, _msgSender());
     }
 
-    function _withdrawPollFinalize() external isWithdraw {
+    function _withdrawPollFinalize() external override isWithdraw {
         finalize();
     }
 
     function _withdrawPollApprovalState()
         public
+        override
         view
         isWithdraw
         returns (bool)

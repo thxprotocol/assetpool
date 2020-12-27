@@ -8,8 +8,9 @@ import "../RolesFacet/RolesView.sol";
 import "hardhat/console.sol";
 import "../GasStationFacet/RelayReceiver.sol";
 import "../AssetPoolFacet/LibAssetPoolStorage.sol";
+import "../../interfaces/IRewardPoll.sol";
 
-contract RewardPollFacet is BasePoll, RolesView {
+contract RewardPollFacet is IRewardPoll, BasePoll, RolesView {
     uint256 constant ENABLE_REWARD = 2**250;
     uint256 constant DISABLE_REWARD = 2**251;
 
@@ -32,8 +33,10 @@ contract RewardPollFacet is BasePoll, RolesView {
         if (approved) {
             if (rwPollData.withdrawAmount == ENABLE_REWARD) {
                 rwAssetPool.state = LibAssetPoolStorage.RewardState.Enabled;
+                emit RewardPollEnabled(_id);
             } else if (rwPollData.withdrawAmount == DISABLE_REWARD) {
                 rwAssetPool.state = LibAssetPoolStorage.RewardState.Disabled;
+                emit RewardPollDisabled(_id);
             } else {
                 // initial state
                 if (
@@ -41,12 +44,14 @@ contract RewardPollFacet is BasePoll, RolesView {
                     rwAssetPool.withdrawDuration == 0
                 ) {
                     rwAssetPool.state = LibAssetPoolStorage.RewardState.Enabled;
+                    emit RewardPollEnabled(_id);
                 }
                 rwAssetPool.withdrawAmount = rwPollData.withdrawAmount;
                 rwAssetPool.withdrawDuration = rwPollData.withdrawDuration;
+                emit RewardPollUpdated(_id, rwAssetPool.withdrawAmount, rwAssetPool.withdrawDuration);
             }
         }
-
+        emit RewardPollFinalized(_id, approved);
         delete rwAssetPool.pollId;
         delete rwPollData.withdrawAmount;
         delete rwPollData.withdrawDuration;
@@ -62,20 +67,50 @@ contract RewardPollFacet is BasePoll, RolesView {
         _;
     }
 
-    function _rewardPollVote(bool _agree) external isReward {
+    function _rewardPollVote(bool _agree) external override isReward {
         vote(_agree);
+        emit RewardPollVoted(baseData().id, _msgSender(), _agree);
     }
 
-    function _rewardPollRevokeVote() external isReward {
+    function _rewardPollRevokeVote() external override isReward {
         revokeVote();
+        emit RewardPollRevokedVote(baseData().id, _msgSender());
     }
 
-    function _rewardPollFinalize() external isReward {
+    function _rewardPollFinalize() external override isReward {
         finalize();
     }
 
-    function _rewardPollApprovalState() public view isReward returns (bool) {
+    function _rewardPollApprovalState() public override view isReward returns (bool) {
         LibBasePollStorage.BasePollStorage storage bData = baseData();
         return bData.yesCounter > bData.noCounter;
+    }
+
+     // Rewardpoll
+    function getRewardIndex(uint256 _id)
+        public
+        override
+        view
+        returns (uint256)
+    {
+        return LibRewardPollStorage.rpStorageId(_id).rewardIndex;
+    }
+
+    function getWithdrawAmount(uint256 _id)
+        public
+        override
+        view
+        returns (uint256)
+    {
+        return LibRewardPollStorage.rpStorageId(_id).withdrawAmount;
+    }
+
+    function getWithdrawDuration(uint256 _id)
+        public
+        override
+        view
+        returns (uint256)
+    {
+        return LibRewardPollStorage.rpStorageId(_id).withdrawDuration;
     }
 }

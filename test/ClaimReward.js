@@ -155,7 +155,7 @@ describe("Test ClaimReward(for), flow", function () {
     // );
   });
   it("Claim reward", async function () {
-    await solution.withdrawPollVote(withdrawId, true);
+    solution.withdrawPollVote(withdrawId, true);
     await ethers.provider.send("evm_increaseTime", [250]);
     await solution.withdrawPollFinalize(withdrawId);
     expect(await token.balanceOf(await voter.getAddress())).to.be.eq(
