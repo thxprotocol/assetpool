@@ -5,6 +5,7 @@ pragma solidity ^0.7.4;
 
 import "./AccessControlView.sol";
 import "diamond-2/contracts/libraries/LibDiamond.sol";
+import "../GasStationFacet/RelayReceiver.sol";
 
 contract RolesView is AccessControlView {
     bytes32 internal constant MEMBER_ROLE = keccak256("MEMBER_ROLE");
@@ -15,7 +16,7 @@ contract RolesView is AccessControlView {
      */
     modifier onlyOwner() {
         require(
-           LibDiamond.contractOwner() == msg.sender,
+           LibDiamond.contractOwner() ==_msgSender(),
             "NOT_OWNER"
         );
         _;
@@ -23,7 +24,7 @@ contract RolesView is AccessControlView {
 
     modifier onlyManager() {
         require(
-            hasRole(MANAGER_ROLE, msg.sender),
+            hasRole(MANAGER_ROLE, _msgSender()),
             "NOT_MANAGER"
         );
         _;
@@ -31,7 +32,7 @@ contract RolesView is AccessControlView {
 
     modifier onlyMember() {
         require(
-            hasRole(MEMBER_ROLE, msg.sender),
+            hasRole(MEMBER_ROLE, _msgSender()),
             "NOT_MEMBER"
         );
         _;

@@ -10,6 +10,7 @@ library LibGasStationStorage {
     address admin;
     mapping(address => uint256) signerNonce;
     uint256 lockCounter;
+    bool enabled;
   }
 
   function gsStorage() internal pure returns (GSStorage storage bs) {

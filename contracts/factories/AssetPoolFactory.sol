@@ -29,16 +29,8 @@ contract AssetPoolFactory is Ownable {
         defaultController = _controller;
     }
 
-    function removeFacet(uint256 _index) external onlyOwner {
-        defaultCut[_index] = defaultCut[defaultCut.length - 1];
-        defaultCut.pop();
-    }
-
-    function addFacet(IDiamondCut.FacetCut memory _facet) external onlyOwner {
-        defaultCut.push(_facet);
-    }
-
     function deployAssetPool(address _api, address _owner, address _token) external onlyOwner {
+        // direct is required for the initialize functions below
         RelayDiamond d = new RelayDiamond(defaultCut, address(this));
         ISolution assetPool = ISolution(address(d));
 

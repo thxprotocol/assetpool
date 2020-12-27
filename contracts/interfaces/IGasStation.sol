@@ -15,4 +15,6 @@ interface IGasStation {
         uint256 _nonce,
         bytes memory _sig
     ) external;
+
+    function setSigning(bool _enabled) external;
 }

@@ -15,53 +15,15 @@ function hex2a(hex) {
 }
 
 module.exports = {
-  helpSign: async (gasStation, object, name, args, account) => {
-    nonce = await gasStation.getLatestNonce(account.getAddress());
+  helpSign: async (solution, name, args, account) => {
+    nonce = await solution.getLatestNonce(account.getAddress());
     nonce = parseInt(nonce) + 1;
-    const call = object.interface.encodeFunctionData(name, args);
-    const hash = web3.utils.soliditySha3(
-      call,
-      object.address,
-      gasStation.address,
-      nonce
-    );
+    const call = solution.interface.encodeFunctionData(name, args);
+    const hash = web3.utils.soliditySha3(call, nonce);
     const sig = await account.signMessage(ethers.utils.arrayify(hash));
-    tx = await gasStation.call(call, object.address, nonce, sig);
+    tx = await solution.call(call, nonce, sig);
     tx = await tx.wait();
-    timestamp = (await ethers.provider.getBlock(tx.blockNumber)).timestamp;
-
-    //Result event from gasSation
-    const event = await gasStation.interface.parseLog(
-      tx.logs[tx.logs.length - 1]
-    );
-    res = event.args;
-    if (res.success) {
-      logs = [];
-      for (const log of tx.logs) {
-        let event;
-        try {
-          event = await object.interface.parseLog(log);
-        } catch (err) {
-          continue;
-        }
-        logs.push(event);
-      }
-
-      return {
-        logs: logs,
-        error: null,
-        timestamp: timestamp,
-      };
-    } else {
-      // remove initial string that indicates this is an error
-      // then parse it to hex --> ascii
-      error = hex2a(res.data.substr(10));
-      return {
-        logs: null,
-        error: error,
-        timestamp: timestamp,
-      };
-    }
+    return tx;
   },
   events: async (tx) => {
     tx = await tx;
@@ -186,7 +148,7 @@ module.exports = {
         action: FacetCutAction.Add,
         facetAddress: updateDiamondFacet.address,
         functionSelectors: getSelectors(updateDiamondFacet),
-      },
+      }
     ];
     all = [];
     for (facet in diamondCut) {

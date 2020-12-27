@@ -13,7 +13,7 @@ import "../GasStationFacet/RelayReceiver.sol";
 
 import "hardhat/console.sol";
 
-contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
+contract AssetPoolFacet is IAssetPool, RolesView {
     uint256 constant ENABLE_REWARD = 2**250;
     uint256 constant DISABLE_REWARD = 2**251;
 

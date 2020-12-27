@@ -45,7 +45,7 @@ import "../../interfaces/IAccessControl.sol";
  * grant and revoke this role. Extra precautions should be taken to secure
  * accounts that have been granted it.
  */
-abstract contract AccessControl is IAccessControl, AccessControlView, RelayReceiver {
+abstract contract AccessControl is IAccessControl, AccessControlView {
  using EnumerableSet for EnumerableSet.AddressSet;
     using Address for address;
 

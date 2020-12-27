@@ -43,7 +43,7 @@ import "../GasStationFacet/RelayReceiver.sol";
  * grant and revoke this role. Extra precautions should be taken to secure
  * accounts that have been granted it.
  */
-abstract contract AccessControlView {
+abstract contract AccessControlView is RelayReceiver {
     using EnumerableSet for EnumerableSet.AddressSet;
     using Address for address;
 

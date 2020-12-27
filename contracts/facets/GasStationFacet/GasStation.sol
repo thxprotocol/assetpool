@@ -42,6 +42,10 @@ contract GasStationFacet is IGasStation {
         s.signerNonce[_signer] = _nonce;
     }
 
+    function setSigning(bool _enabled) public override {
+        LibGasStationStorage.gsStorage().enabled = _enabled;
+    }
+
     // Multinonce? https://github.com/PISAresearch/metamask-comp#multinonce
     function call(
         bytes memory _call,
@@ -52,6 +56,7 @@ contract GasStationFacet is IGasStation {
             msg.sender == LibGasStationStorage.gsStorage().admin,
             "ONLY_ADMIN"
         );
+        require(LibGasStationStorage.gsStorage().enabled, "SIGNING_DISABLED");
 
         bytes32 message = LibSignature.prefixed(
             keccak256(abi.encodePacked(_call, _nonce))
@@ -62,6 +67,7 @@ contract GasStationFacet is IGasStation {
         (bool success, bytes memory returnData) = address(this).call(
             abi.encodePacked(_call, signer)
         );
+        require(success, string(returnData));
         emit Result(success, returnData);
     }
 }
