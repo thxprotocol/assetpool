@@ -11,7 +11,7 @@ import "../AssetPoolFacet/LibAssetPoolStorage.sol";
 
 contract WithdrawPollFacet is BasePoll, RolesView {
     function voteValidate(bool _agree, address _voter) internal override {
-        require(_isMember(_voter), "NO_MEMBER");
+        require(_isManager(_voter), "NO_MEMBER");
     }
 
     modifier isWithdraw {

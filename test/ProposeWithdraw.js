@@ -9,7 +9,7 @@ const {
   DISABLE_REWARD,
 } = require("./utils.js");
 
-describe("Test ClaimReward(for), storage/access", function () {
+describe("Test proposeWithdraw, storage/access", function () {
   let solution;
 
   let owner;

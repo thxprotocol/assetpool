@@ -133,6 +133,7 @@ contract AssetPoolFacet is IAssetPool, RolesView, RelayReceiver {
      * @param _beneficiary Address of the beneficiary
      */
     function claimRewardFor(uint256 _id, address _beneficiary) public override {
+        // TODO, decide if this needs to be only owner (like legacy pool)
         require(_isMember(_msgSender()), "NOT_MEMBER");
         require(_isMember(_beneficiary), "NOT_MEMBER");
 
