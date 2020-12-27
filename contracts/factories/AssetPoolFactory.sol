@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import "../RelayDiamond.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "diamond-2/contracts/interfaces/IDiamondCut.sol";
 
 import "../interfaces/ISolution.sol";
 
@@ -11,6 +12,10 @@ contract AssetPoolFactory is Ownable {
 
     event AssetPoolDeployed(address assetPool);
     address public defaultController;
+
+    address[] public assetPools;
+    mapping(address => bool) public isAssetPool;
+
     IDiamondCut.FacetCut[] public defaultCut;
 
     constructor(IDiamondCut.FacetCut[] memory _facets) {
@@ -33,7 +38,7 @@ contract AssetPoolFactory is Ownable {
         defaultCut.push(_facet);
     }
 
-    function deployAssetPool(address _api, address _owner, address _token) external {
+    function deployAssetPool(address _api, address _owner, address _token) external onlyOwner {
         RelayDiamond d = new RelayDiamond(defaultCut, address(this));
         ISolution assetPool = ISolution(address(d));
 
@@ -42,6 +47,9 @@ contract AssetPoolFactory is Ownable {
         assetPool.initializeAssetPool(_token);
         assetPool.initializeRoles(_owner);
         assetPool.transferOwnership(defaultController);
+
+        assetPools.push(address(d));
+        isAssetPool[address(d)] = true;
         emit AssetPoolDeployed(address(d));
     }
 }

@@ -104,9 +104,11 @@ module.exports = {
     );
     PollProxyFacet = await ethers.getContractFactory("PollProxyFacet");
 
+    UpdateDiamondFacet = await ethers.getContractFactory("UpdateDiamondFacet");
     AssetPoolFactory = await ethers.getContractFactory("AssetPoolFactory");
 
     assetPoolFacet = await AssetPoolFacet.deploy();
+    updateDiamondFacet = await UpdateDiamondFacet.deploy();
     assetPoolFacetView = await AssetPoolFacetView.deploy();
     rolesFacet = await RolesFacet.deploy();
     diamondCutFacet = await DiamondCutFacet.deploy();
@@ -180,6 +182,11 @@ module.exports = {
         facetAddress: rolesFacet.address,
         functionSelectors: getSelectors(rolesFacet),
       },
+      {
+        action: FacetCutAction.Add,
+        facetAddress: updateDiamondFacet.address,
+        functionSelectors: getSelectors(updateDiamondFacet),
+      },
     ];
     all = [];
     for (facet in diamondCut) {
@@ -199,6 +206,26 @@ module.exports = {
       }
     }
     return await AssetPoolFactory.deploy(diamondCut);
+  },
+  updateToBypassPolls: async (solution) => {
+    WithdrawPollFacetBypass = await ethers.getContractFactory(
+      "WithdrawPollFacetBypass"
+    );
+    RewardPollFacetBypass = await ethers.getContractFactory(
+      "RewardPollFacetBypass"
+    );
+
+    withdrawPollFacetBypass = await WithdrawPollFacetBypass.deploy();
+    rewardPollFacetBypass = await RewardPollFacetBypass.deploy();
+
+    await solution.updateAssetPool(
+      getSelectors(withdrawPollFacetBypass),
+      withdrawPollFacetBypass.address
+    );
+    await solution.updateAssetPool(
+      getSelectors(rewardPollFacetBypass),
+      rewardPollFacetBypass.address
+    );
   },
   RewardState: {
     Disabled: 0,

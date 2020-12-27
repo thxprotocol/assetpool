@@ -12,6 +12,7 @@ import "./IAssetPool.sol";
 import "./IAssetPoolView.sol";
 import "./IRoles.sol";
 import "./IAccessControl.sol";
+import "./IUpdateDiamond.sol";
 
 pragma solidity ^0.7.4;
 pragma experimental ABIEncoderV2;
@@ -29,5 +30,6 @@ interface ISolution is
     IAssetPool,
     IAssetPoolView,
     IRoles,
-    IAccessControl
+    IAccessControl,
+    IUpdateDiamond
 {}

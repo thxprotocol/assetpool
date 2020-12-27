@@ -77,6 +77,7 @@ contract WithdrawPollFacet is IWithdrawPoll, BasePoll, RolesView {
 
     function _withdrawPollApprovalState()
         public
+        virtual
         override
         view
         isWithdraw

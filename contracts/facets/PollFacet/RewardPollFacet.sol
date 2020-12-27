@@ -48,7 +48,11 @@ contract RewardPollFacet is IRewardPoll, BasePoll, RolesView {
                 }
                 rwAssetPool.withdrawAmount = rwPollData.withdrawAmount;
                 rwAssetPool.withdrawDuration = rwPollData.withdrawDuration;
-                emit RewardPollUpdated(_id, rwAssetPool.withdrawAmount, rwAssetPool.withdrawDuration);
+                emit RewardPollUpdated(
+                    _id,
+                    rwAssetPool.withdrawAmount,
+                    rwAssetPool.withdrawDuration
+                );
             }
         }
         emit RewardPollFinalized(_id, approved);
@@ -81,12 +85,19 @@ contract RewardPollFacet is IRewardPoll, BasePoll, RolesView {
         finalize();
     }
 
-    function _rewardPollApprovalState() public override view isReward returns (bool) {
+    function _rewardPollApprovalState()
+        public
+        virtual
+        override
+        view
+        isReward
+        returns (bool)
+    {
         LibBasePollStorage.BasePollStorage storage bData = baseData();
         return bData.yesCounter > bData.noCounter;
     }
 
-     // Rewardpoll
+    // Rewardpoll
     function getRewardIndex(uint256 _id)
         public
         override
