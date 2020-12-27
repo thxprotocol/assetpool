@@ -2,7 +2,6 @@
 pragma solidity ^0.7.4;
 
 interface IRoles {
-
     function initializeRoles(address _owner) external;
 
     function removeManager(address _account) external;
@@ -16,7 +15,10 @@ interface IRoles {
     function isManager(address _account) external view returns (bool);
 
     function isMember(address _account) external view returns (bool);
-    
-    function getOwner() external view returns (address);
 
+    function isManagerRoleAdmin(address _account) external view returns (bool);
+
+    function isMemberRoleAdmin(address _account) external view returns (bool);
+
+    function getOwner() external view returns (address);
 }

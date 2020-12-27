@@ -23,8 +23,7 @@ contract RolesView is AccessControlView {
 
     modifier onlyManager() {
         require(
-            hasRole(MANAGER_ROLE, msg.sender) ||
-                hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
+            hasRole(MANAGER_ROLE, msg.sender),
             "NOT_MANAGER"
         );
         _;
@@ -32,8 +31,7 @@ contract RolesView is AccessControlView {
 
     modifier onlyMember() {
         require(
-            hasRole(MEMBER_ROLE, msg.sender) ||
-                hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
+            hasRole(MEMBER_ROLE, msg.sender),
             "NOT_MEMBER"
         );
         _;

@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./LibAccessStorage.sol";
 import "./AccessControlView.sol";
 import "../GasStationFacet/RelayReceiver.sol";
+import "../../interfaces/IAccessControl.sol";
 
 /**
  * @dev Contract module that allows children to implement role-based access
@@ -44,7 +45,7 @@ import "../GasStationFacet/RelayReceiver.sol";
  * grant and revoke this role. Extra precautions should be taken to secure
  * accounts that have been granted it.
  */
-abstract contract AccessControl is AccessControlView, RelayReceiver {
+abstract contract AccessControl is IAccessControl, AccessControlView, RelayReceiver {
  using EnumerableSet for EnumerableSet.AddressSet;
     using Address for address;
 
@@ -97,7 +98,7 @@ abstract contract AccessControl is AccessControlView, RelayReceiver {
      *
      * - the caller must have ``role``'s admin role.
      */
-    function grantRole(bytes32 role, address account) public virtual {
+    function grantRole(bytes32 role, address account) public override virtual {
         require(
             hasRole(
                LibAccessStorage.roleStorage().roles[role].adminRole,
@@ -118,7 +119,7 @@ abstract contract AccessControl is AccessControlView, RelayReceiver {
      *
      * - the caller must have ``role``'s admin role.
      */
-    function revokeRole(bytes32 role, address account) public virtual {
+    function revokeRole(bytes32 role, address account) public override virtual {
         require(
             hasRole(
                 LibAccessStorage.roleStorage().roles[role].adminRole,
@@ -144,7 +145,7 @@ abstract contract AccessControl is AccessControlView, RelayReceiver {
      *
      * - the caller must be `account`.
      */
-    function renounceRole(bytes32 role, address account) public virtual {
+    function renounceRole(bytes32 role, address account) public override virtual {
         require(
             account == _msgSender(),
             "AccessControl: can only renounce roles for self"

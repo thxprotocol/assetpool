@@ -12,11 +12,29 @@ contract RolesFacet is IRoles, RolesView, AccessControl {
         return _isManager(_account);
     }
 
-    function isMember(address _account) public override view returns (bool){
+    function isMember(address _account) public override view returns (bool) {
         return _isMember(_account);
     }
 
-    function getOwner() public override view returns (address){
+    function isManagerRoleAdmin(address _account)
+        public
+        override
+        view
+        returns (bool)
+    {
+        return hasRole(getRoleAdmin(MANAGER_ROLE), _account);
+    }
+
+    function isMemberRoleAdmin(address _account)
+        public
+        override
+        view
+        returns (bool)
+    {
+        return hasRole(getRoleAdmin(MEMBER_ROLE), _account);
+    }
+
+    function getOwner() public override view returns (address) {
         return _getOwner();
     }
 
@@ -34,7 +52,7 @@ contract RolesFacet is IRoles, RolesView, AccessControl {
      * @dev Grants member role and adds address to member list
      * @param _account A valid address
      */
-    function addMember(address _account) public override onlyMember {
+    function addMember(address _account) public override {
         grantRole(MEMBER_ROLE, _account);
     }
 
@@ -42,7 +60,7 @@ contract RolesFacet is IRoles, RolesView, AccessControl {
      * @dev Revokes role and sets member address to false in list.
      * @param _account A member address
      */
-    function removeMember(address _account) public override onlyManager {
+    function removeMember(address _account) public override {
         revokeRole(MEMBER_ROLE, _account);
     }
 
@@ -50,7 +68,7 @@ contract RolesFacet is IRoles, RolesView, AccessControl {
      * @dev Grants manager role and adds address to manager list
      * @param _account A member address
      */
-    function addManager(address _account) public override onlyManager {
+    function addManager(address _account) public override {
         grantRole(MANAGER_ROLE, _account);
     }
 
@@ -58,7 +76,7 @@ contract RolesFacet is IRoles, RolesView, AccessControl {
      * @dev Revokes role and sets manager address to false in list.
      * @param _account Address of the owner of the asset pool
      */
-    function removeManager(address _account) public override onlyManager {
+    function removeManager(address _account) public override {
         require(msg.sender != _account, "OWN_ACCOUNT");
         revokeRole(MANAGER_ROLE, _account);
     }
