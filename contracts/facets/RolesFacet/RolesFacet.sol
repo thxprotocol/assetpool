@@ -77,7 +77,7 @@ contract RolesFacet is IRoles, RolesView, AccessControl {
      * @param _account Address of the owner of the asset pool
      */
     function removeManager(address _account) public override {
-        require(msg.sender != _account, "OWN_ACCOUNT");
+        require(_msgSender() != _account, "OWN_ACCOUNT");
         revokeRole(MANAGER_ROLE, _account);
     }
 }

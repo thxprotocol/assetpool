@@ -35,7 +35,7 @@ describe("Test AddReward", function () {
         assetPoolFactory.deployAssetPool(
           await owner.getAddress(),
           await owner.getAddress(),
-          await owner.getAddress()
+          token.address
         )
       );
       diamond = ev[ev.length - 1].args.assetPool;
@@ -91,7 +91,7 @@ describe("Test AddReward", function () {
         assetPoolFactory.deployAssetPool(
           await owner.getAddress(),
           await owner.getAddress(),
-          await owner.getAddress()
+          token.address
         )
       );
       diamond = ev[ev.length - 1].args.assetPool;
@@ -136,7 +136,7 @@ describe("Test AddReward", function () {
         assetPoolFactory.deployAssetPool(
           await owner.getAddress(),
           await owner.getAddress(),
-          await owner.getAddress()
+          token.address
         )
       );
       diamond = ev[ev.length - 1].args.assetPool;
@@ -214,7 +214,7 @@ describe("Test AddReward", function () {
         assetPoolFactory.deployAssetPool(
           await owner.getAddress(),
           await owner.getAddress(),
-          await owner.getAddress()
+          token.address
         )
       );
       diamond = ev[ev.length - 1].args.assetPool;
@@ -253,7 +253,7 @@ describe("Test AddReward", function () {
         assetPoolFactory.deployAssetPool(
           await owner.getAddress(),
           await owner.getAddress(),
-          await owner.getAddress()
+          token.address
         )
       );
       diamond = ev[ev.length - 1].args.assetPool;

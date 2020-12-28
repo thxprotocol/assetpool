@@ -38,7 +38,7 @@ describe("GasStation", function () {
         assetPoolFactory.deployAssetPool(
           await owner.getAddress(),
           await owner.getAddress(),
-          await owner.getAddress()
+          token.address
         )
       );
       diamond = ev[ev.length - 1].args.assetPool;
@@ -84,7 +84,7 @@ describe("GasStation", function () {
         assetPoolFactory.deployAssetPool(
           await owner.getAddress(),
           await owner.getAddress(),
-          await token.address
+          token.address
         )
       );
       diamond = ev[ev.length - 1].args.assetPool;
