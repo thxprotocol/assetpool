@@ -8,11 +8,6 @@ import "hardhat/console.sol";
 // But kept minimalist.
 contract RelayReceiver {
     function _msgSender() internal pure returns (address payable result) {
-        // TODO make it configurable
-        // e.g.
-        // signer: bool
-        // direct: bool
-
         // If not call from gasStation, return original sender
         // We need to read 20 bytes (an address) located at array index msg.data.length - 20. In memory, the array
         // is prefixed with a 32-byte length value, so we first add 32 to get the memory read index. However, doing

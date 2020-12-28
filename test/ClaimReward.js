@@ -121,7 +121,7 @@ describe("Test ClaimReward(for), flow", function () {
   let withdrawTimestamp;
   beforeEach(
     (_beforeDeployment = async function () {
-      [owner, voter] = await ethers.getSigners();
+      [owner, voter, third] = await ethers.getSigners();
       const THXToken = await ethers.getContractFactory("ExampleToken");
       token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
       assetPoolFactory = await deployBasics(ethers, owner, voter);
@@ -135,6 +135,7 @@ describe("Test ClaimReward(for), flow", function () {
       diamond = ev[ev.length - 1].args.assetPool;
       solution = await ethers.getContractAt("ISolution", diamond);
       await solution.addManager(voter.getAddress());
+      await solution.addMember(third.getAddress());
       await solution.setProposeWithdrawPollDuration(180);
       await solution.setRewardPollDuration(180);
       await token.transfer(solution.address, parseEther("1000"));
@@ -149,10 +150,9 @@ describe("Test ClaimReward(for), flow", function () {
     })
   );
   it("Claim reward, no manager", async function () {
-    // TODO, check roles
-    // await expect(solution.rewardPollVote(withdrawId, true)).to.be.revertedWith(
-    //   "NO_MANAGER"
-    // );
+    await expect(solution.connect(third).withdrawPollVote(withdrawId, true)).to.be.revertedWith(
+      "NO_MANAGER"
+    );
   });
   it("Claim reward", async function () {
     solution.withdrawPollVote(withdrawId, true);
