@@ -12,7 +12,7 @@ contract GasStationFacet is IGasStation {
         LibGasStationStorage.gsStorage().admin = _admin;
     }
 
-    function getAdmin() external override view returns (address) {
+    function getGasStationAdmin() external override view returns (address) {
         return LibGasStationStorage.gsStorage().admin;
     }
 

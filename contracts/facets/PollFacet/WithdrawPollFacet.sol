@@ -32,7 +32,6 @@ contract WithdrawPollFacet is IWithdrawPoll, BasePoll, RolesView {
     function onPollFinish(uint256 _id) internal override {
         bool approved = _withdrawPollApprovalState();
 
-
             LibWithdrawPollStorage.WPStorage storage wpPollData
          = LibWithdrawPollStorage.wpStorageId(_id);
 

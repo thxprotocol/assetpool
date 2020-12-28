@@ -6,7 +6,7 @@ interface IGasStation {
 
     function initializeGasStation(address _admin) external;
 
-    function getAdmin() external view returns (address);
+    function getGasStationAdmin() external view returns (address);
 
     function getLatestNonce(address _signer) external view returns (uint256);
 
