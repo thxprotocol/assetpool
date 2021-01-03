@@ -28,7 +28,7 @@ describe("GasStation", function () {
       [owner, voter] = await ethers.getSigners();
       const THXToken = await ethers.getContractFactory("ExampleToken");
       token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
-      assetPoolFactory = await deployBasics(ethers, owner, voter);
+      assetPoolFactory = await deployBasics();
     })
   );
   describe("Signing enabled/disabled", async function () {

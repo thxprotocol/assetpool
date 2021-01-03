@@ -28,7 +28,7 @@ describe("Test ClaimReward(for), storage/access", function () {
       [owner, voter] = await ethers.getSigners();
       const THXToken = await ethers.getContractFactory("ExampleToken");
       token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
-      assetPoolFactory = await deployBasics(ethers, owner, voter);
+      assetPoolFactory = await deployBasics();
       ev = await events(
         assetPoolFactory.deployAssetPool(
           await owner.getAddress(),
@@ -124,7 +124,7 @@ describe("Test ClaimReward(for), flow", function () {
       [owner, voter, third] = await ethers.getSigners();
       const THXToken = await ethers.getContractFactory("ExampleToken");
       token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
-      assetPoolFactory = await deployBasics(ethers, owner, voter);
+      assetPoolFactory = await deployBasics();
       ev = await events(
         assetPoolFactory.deployAssetPool(
           await owner.getAddress(),

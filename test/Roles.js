@@ -36,7 +36,7 @@ describe("Test Roles", function () {
 
       const THXToken = await ethers.getContractFactory("ExampleToken");
       token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
-      assetPoolFactory = await deployBasics(ethers, owner, voter);
+      assetPoolFactory = await deployBasics();
     })
   );
   describe("Test adding roles", async function () {

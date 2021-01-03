@@ -23,7 +23,7 @@ module.exports = {
     tx = await tx.wait();
     return (await ethers.provider.getBlock(tx.blockNumber)).timestamp;
   },
-  deployBasics: async (ethers, owner, voter) => {
+  deployBasics: async () => {
     FacetCutAction = {
       Add: 0,
       Replace: 1,
@@ -175,6 +175,26 @@ module.exports = {
     await solution.updateAssetPool(
       getSelectors(rewardPollFacetBypass),
       rewardPollFacetBypass.address
+    );
+  },
+  downgradeFromBypassPolls: async (solution) => {
+    WithdrawPollFacet = await ethers.getContractFactory(
+      "WithdrawPollFacet"
+    );
+    RewardPollFacet = await ethers.getContractFactory(
+      "RewardPollFacet"
+    );
+
+    withdrawPollFacet = await WithdrawPollFacet.deploy();
+    rewardPollFacet = await RewardPollFacet.deploy();
+
+    await solution.updateAssetPool(
+      getSelectors(withdrawPollFacet),
+      withdrawPollFacet.address
+    );
+    await solution.updateAssetPool(
+      getSelectors(rewardPollFacet),
+      rewardPollFacet.address
     );
   },
   RewardState: {

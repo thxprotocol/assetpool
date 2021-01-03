@@ -37,7 +37,7 @@ describe("Test UpdateReward", function () {
     [owner, voter] = await ethers.getSigners();
     const THXToken = await ethers.getContractFactory("ExampleToken");
     token = await THXToken.deploy(owner.getAddress(), parseEther("1000000"));
-    assetPoolFactory = await deployBasics(ethers, owner, voter);
+    assetPoolFactory = await deployBasics();
     ev = await events(
       assetPoolFactory.deployAssetPool(
         await owner.getAddress(),
