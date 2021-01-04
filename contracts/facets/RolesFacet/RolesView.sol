@@ -6,6 +6,7 @@ pragma solidity ^0.7.4;
 import "./AccessControlView.sol";
 import "diamond-2/contracts/libraries/LibDiamond.sol";
 import "../GasStationFacet/RelayReceiver.sol";
+import "./LibAccessStorage.sol";
 
 contract RolesView is AccessControlView {
     bytes32 internal constant MEMBER_ROLE = keccak256("MEMBER_ROLE");
@@ -15,16 +16,16 @@ contract RolesView is AccessControlView {
      * @dev Throws if called by any account other than the owner.
      */
     modifier onlyOwner() {
-        require(
-           LibDiamond.contractOwner() ==_msgSender(),
-            "NOT_OWNER"
-        );
+        require(LibDiamond.contractOwner() == _msgSender(), "NOT_OWNER");
         _;
     }
 
     modifier onlyManager() {
         require(
-            hasRole(MANAGER_ROLE, _msgSender()),
+            hasRole(
+                MANAGER_ROLE,
+                LibAccessStorage.roleStorage().addressToMember[_msgSender()]
+            ),
             "NOT_MANAGER"
         );
         _;
@@ -32,7 +33,10 @@ contract RolesView is AccessControlView {
 
     modifier onlyMember() {
         require(
-            hasRole(MEMBER_ROLE, _msgSender()),
+            hasRole(
+                MEMBER_ROLE,
+                LibAccessStorage.roleStorage().addressToMember[_msgSender()]
+            ),
             "NOT_MEMBER"
         );
         _;
@@ -50,7 +54,11 @@ contract RolesView is AccessControlView {
      * @param _account Address of the owner of the asset pool
      */
     function _isManager(address _account) internal view returns (bool) {
-        return hasRole(MANAGER_ROLE, _account);
+        return
+            hasRole(
+                MANAGER_ROLE,
+                LibAccessStorage.roleStorage().addressToMember[_account]
+            );
     }
 
     /**
@@ -58,7 +66,9 @@ contract RolesView is AccessControlView {
      * @param _account A member address
      */
     function _isMember(address _account) internal view returns (bool) {
-        return
-            hasRole(MEMBER_ROLE, _account) || hasRole(MANAGER_ROLE, _account);
+        uint256 member = LibAccessStorage
+            .roleStorage()
+            .addressToMember[_account];
+        return hasRole(MEMBER_ROLE, member) || hasRole(MANAGER_ROLE, member);
     }
 }

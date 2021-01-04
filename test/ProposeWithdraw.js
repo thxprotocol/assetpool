@@ -72,18 +72,18 @@ describe("Test proposeWithdraw, storage/access", function () {
       solution
         .connect(voter)
         .proposeWithdraw(parseEther("1"), await owner.getAddress())
-    ).to.be.revertedWith("NOT_MEMBER");
+    ).to.be.revertedWith("NOT_SETUP");
   });
   it("propose rewardFor non member", async function () {
     await expect(
       solution.proposeWithdraw(parseEther("1"), await voter.getAddress())
-    ).to.be.revertedWith("NOT_MEMBER");
+    ).to.be.revertedWith("NOT_SETUP");
   });
   it("propose rewardFor member as non member", async function () {
     await expect(
       solution
         .connect(voter)
         .proposeWithdraw(parseEther("1"), await voter.getAddress())
-    ).to.be.revertedWith("NOT_MEMBER");
+    ).to.be.revertedWith("NOT_SETUP");
   });
 });

@@ -10,11 +10,14 @@ library LibAccessStorage {
     );
 
     struct RoleStorage {
+        uint256 memberCounter;
+        mapping(address => uint256) addressToMember;
+        mapping(uint256 => address) memberToAddress;
         mapping(bytes32 => RoleData) roles;
     }
 
     struct RoleData {
-        EnumerableSet.AddressSet members;
+        EnumerableSet.UintSet members;
         bytes32 adminRole;
     }
 

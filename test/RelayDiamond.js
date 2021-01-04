@@ -57,6 +57,8 @@ describe("GasStation", function () {
       expect(await solution.getRewardPollDuration()).to.eq(180);
     });
     it("Not manager", async function () {
+      // needed 
+      await solution.addMember(await voter.getAddress());
       await expect(
         helpSign(solution, "setRewardPollDuration", [180], voter)
       ).to.be.revertedWith("NOT_MANAGER");
@@ -89,7 +91,7 @@ describe("GasStation", function () {
       );
       diamond = ev[ev.length - 1].args.assetPool;
       solution = await ethers.getContractAt("ISolution", diamond);
-      await solution.addMember(await voter.getAddress())
+      await solution.addMember(await voter.getAddress());
       await solution.setSigning(true);
 
       await token.transfer(solution.address, parseEther("1000"));

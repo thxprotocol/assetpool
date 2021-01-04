@@ -11,7 +11,7 @@ const {
   downgradeFromBypassPolls,
 } = require("./utils.js");
 
-describe.only("Happy flow", function () {
+describe("Happy flow", function () {
   let solution;
 
   let owner;

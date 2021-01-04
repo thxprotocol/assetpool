@@ -44,7 +44,7 @@ import "../GasStationFacet/RelayReceiver.sol";
  * accounts that have been granted it.
  */
 abstract contract AccessControlView is RelayReceiver {
-    using EnumerableSet for EnumerableSet.AddressSet;
+    using EnumerableSet for EnumerableSet.UintSet;
     using Address for address;
 
     bytes32 internal constant DEFAULT_ADMIN_ROLE = 0x00;
@@ -52,10 +52,15 @@ abstract contract AccessControlView is RelayReceiver {
     /**
      * @dev Returns `true` if `account` has been granted `role`.
      */
-    function hasRole(bytes32 role, address account) internal view returns (bool) {
+    function hasRole(bytes32 role, uint256 _member)
+        internal
+        view
+        returns (bool)
+    {
+        require(_member != 0, "NOT_SETUP");
         return
             LibAccessStorage.roleStorage().roles[role].members.contains(
-                account
+                _member
             );
     }
 
@@ -82,7 +87,7 @@ abstract contract AccessControlView is RelayReceiver {
     function getRoleMember(bytes32 role, uint256 index)
         internal
         view
-        returns (address)
+        returns (uint256)
     {
         return LibAccessStorage.roleStorage().roles[role].members.at(index);
     }

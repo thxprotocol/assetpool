@@ -73,17 +73,18 @@ describe("Test Roles", function () {
         solution.connect(voter).addMember(await other.getAddress())
       ).to.be.revertedWith("AccessControl: sender must be an admin to grant");
     });
-    it("addMember directly", async function () {
-      const voterAddress = await voter.getAddress();
+    // Not possible as this skipped the member setup
+    // it("addMember directly", async function () {
+    //   const voterAddress = await voter.getAddress();
 
-      await solution.grantRole(MEMBER_ROLE, voterAddress);
-      expect(await solution.isMember(voterAddress)).to.eq(true);
-      expect(await solution.isManager(voterAddress)).to.eq(false);
+    //   await solution.grantRole(MEMBER_ROLE, voterAddress);
+    //   expect(await solution.isMember(voterAddress)).to.eq(true);
+    //   expect(await solution.isManager(voterAddress)).to.eq(false);
 
-      await expect(
-        solution.connect(voter).addMember(await other.getAddress())
-      ).to.be.revertedWith("AccessControl: sender must be an admin to grant");
-    });
+    //   await expect(
+    //     solution.connect(voter).addMember(await other.getAddress())
+    //   ).to.be.revertedWith("AccessControl: sender must be an admin to grant");
+    // });
     it("addManager", async function () {
       const voterAddress = await voter.getAddress();
 
@@ -97,6 +98,7 @@ describe("Test Roles", function () {
     });
     it("addManager directly", async function () {
       const voterAddress = await voter.getAddress();
+      await solution.addMember(voterAddress)
 
       await solution.grantRole(MANAGER_ROLE, voterAddress);
       expect(await solution.isMember(voterAddress)).to.eq(true);
@@ -108,9 +110,10 @@ describe("Test Roles", function () {
     });
     it("addAdmin directly", async function () {
       const voterAddress = await voter.getAddress();
+      await solution.addMember(voterAddress)
 
       await solution.grantRole(ADMIN_ROLE, voterAddress);
-      expect(await solution.isMember(voterAddress)).to.eq(false);
+      expect(await solution.isMember(voterAddress)).to.eq(true);
       expect(await solution.isManager(voterAddress)).to.eq(false);
 
       await solution.connect(voter).addMember(await other.getAddress());
@@ -130,7 +133,8 @@ describe("Test Roles", function () {
       );
       diamond = ev[ev.length - 1].args.assetPool;
       solution = await ethers.getContractAt("ISolution", diamond);
-      await solution.grantRole(MEMBER_ROLE, await voter.getAddress());
+      await solution.addMember(await voter.getAddress());
+      await solution.addMember(await other.getAddress());
       await solution.grantRole(MANAGER_ROLE, await other.getAddress());
     });
     it("Revoke", async function () {

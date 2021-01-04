@@ -46,7 +46,7 @@ import "../../interfaces/IAccessControl.sol";
  * accounts that have been granted it.
  */
 abstract contract AccessControl is IAccessControl, AccessControlView {
- using EnumerableSet for EnumerableSet.AddressSet;
+    using EnumerableSet for EnumerableSet.UintSet;
     using Address for address;
 
     /**
@@ -71,7 +71,7 @@ abstract contract AccessControl is IAccessControl, AccessControlView {
      */
     event RoleGranted(
         bytes32 indexed role,
-        address indexed account,
+        uint256 indexed member,
         address indexed sender
     );
 
@@ -84,7 +84,7 @@ abstract contract AccessControl is IAccessControl, AccessControlView {
      */
     event RoleRevoked(
         bytes32 indexed role,
-        address indexed account,
+        uint256 indexed member,
         address indexed sender
     );
 
@@ -98,16 +98,19 @@ abstract contract AccessControl is IAccessControl, AccessControlView {
      *
      * - the caller must have ``role``'s admin role.
      */
-    function grantRole(bytes32 role, address account) public override virtual {
+    function grantRole(bytes32 role, address account) public virtual override {
         require(
             hasRole(
-               LibAccessStorage.roleStorage().roles[role].adminRole,
-                _msgSender()
+                LibAccessStorage.roleStorage().roles[role].adminRole,
+                LibAccessStorage.roleStorage().addressToMember[_msgSender()]
             ),
             "AccessControl: sender must be an admin to grant"
         );
 
-        _grantRole(role, account);
+        _grantRole(
+            role,
+            LibAccessStorage.roleStorage().addressToMember[account]
+        );
     }
 
     /**
@@ -119,16 +122,19 @@ abstract contract AccessControl is IAccessControl, AccessControlView {
      *
      * - the caller must have ``role``'s admin role.
      */
-    function revokeRole(bytes32 role, address account) public override virtual {
+    function revokeRole(bytes32 role, address account) public virtual override {
         require(
             hasRole(
                 LibAccessStorage.roleStorage().roles[role].adminRole,
-                _msgSender()
+                LibAccessStorage.roleStorage().addressToMember[_msgSender()]
             ),
             "AccessControl: sender must be an admin to revoke"
         );
 
-        _revokeRole(role, account);
+        _revokeRole(
+            role,
+            LibAccessStorage.roleStorage().addressToMember[account]
+        );
     }
 
     /**
@@ -145,13 +151,20 @@ abstract contract AccessControl is IAccessControl, AccessControlView {
      *
      * - the caller must be `account`.
      */
-    function renounceRole(bytes32 role, address account) public override virtual {
+    function renounceRole(bytes32 role, address account)
+        public
+        virtual
+        override
+    {
         require(
             account == _msgSender(),
             "AccessControl: can only renounce roles for self"
         );
 
-        _revokeRole(role, account);
+        _revokeRole(
+            role,
+            LibAccessStorage.roleStorage().addressToMember[account]
+        );
     }
 
     /**
@@ -171,7 +184,10 @@ abstract contract AccessControl is IAccessControl, AccessControlView {
      * ====
      */
     function _setupRole(bytes32 role, address account) internal virtual {
-        _grantRole(role, account);
+        _grantRole(
+            role,
+            LibAccessStorage.roleStorage().addressToMember[account]
+        );
     }
 
     /**
@@ -188,17 +204,19 @@ abstract contract AccessControl is IAccessControl, AccessControlView {
         LibAccessStorage.roleStorage().roles[role].adminRole = adminRole;
     }
 
-    function _grantRole(bytes32 role, address account) private {
-        if (LibAccessStorage.roleStorage().roles[role].members.add(account)) {
-            emit RoleGranted(role, account, _msgSender());
+    function _grantRole(bytes32 role, uint256 _member) private {
+        require(_member != 0, "NOT_SETUP");
+        if (LibAccessStorage.roleStorage().roles[role].members.add(_member)) {
+            emit RoleGranted(role, _member, _msgSender());
         }
     }
 
-    function _revokeRole(bytes32 role, address account) private {
+    function _revokeRole(bytes32 role, uint256 _member) private {
+        require(_member != 0, "NOT_SETUP");
         if (
-            LibAccessStorage.roleStorage().roles[role].members.remove(account)
+            LibAccessStorage.roleStorage().roles[role].members.remove(_member)
         ) {
-            emit RoleRevoked(role, account, _msgSender());
+            emit RoleRevoked(role, _member, _msgSender());
         }
     }
 }

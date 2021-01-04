@@ -77,18 +77,18 @@ describe("Test ClaimReward(for), storage/access", function () {
   });
   it("Claim reward as non member", async function () {
     await expect(solution.connect(voter).claimReward(1)).to.be.revertedWith(
-      "NOT_MEMBER"
+      "NOT_SETUP"
     );
   });
   it("Claim rewardFor non member", async function () {
     await expect(
       solution.connect(owner).claimRewardFor(1, await voter.getAddress())
-    ).to.be.revertedWith("NOT_MEMBER");
+    ).to.be.revertedWith("NOT_SETUP");
   });
   it("Claim rewardFor member as non owner", async function () {
     await expect(
       solution.connect(voter).claimRewardFor(1, await owner.getAddress())
-    ).to.be.revertedWith("NOT_MEMBER");
+    ).to.be.revertedWith("NOT_SETUP");
   });
   it("Claim non reward", async function () {
     await expect(solution.connect(owner).claimReward(2)).to.be.reverted;
