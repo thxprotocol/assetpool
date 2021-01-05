@@ -9,6 +9,7 @@ import "hardhat/console.sol";
 import "../GasStationFacet/RelayReceiver.sol";
 import "../../interfaces/IWithdrawPoll.sol";
 import "../AssetPoolFacet/LibAssetPoolStorage.sol";
+import "../RolesFacet/LibAccessStorage.sol";
 
 contract WithdrawPollFacet is IWithdrawPoll, BasePoll, RolesView {
     function voteValidate(bool _agree, address _voter) internal override {
@@ -22,7 +23,7 @@ contract WithdrawPollFacet is IWithdrawPoll, BasePoll, RolesView {
             LibWithdrawPollStorage.WPStorage storage wpPollData
          = LibWithdrawPollStorage.wpStorageId(bData.id);
 
-        require(wpPollData.beneficiary != address(0), "NOT_WITHDRAW_POLL");
+        require(wpPollData.beneficiary != 0, "NOT_WITHDRAW_POLL");
         _;
     }
 
@@ -37,9 +38,11 @@ contract WithdrawPollFacet is IWithdrawPoll, BasePoll, RolesView {
 
         if (approved) {
             IERC20 token = LibAssetPoolStorage.apStorage().token;
-
-            token.transfer(wpPollData.beneficiary, wpPollData.amount);
-            emit Withdrawn(_id, wpPollData.beneficiary, wpPollData.amount);
+            address benef = LibAccessStorage
+                .roleStorage()
+                .memberToAddress[wpPollData.beneficiary];
+            token.transfer(benef, wpPollData.amount);
+            emit Withdrawn(_id, benef, wpPollData.amount);
         }
 
         emit WithdrawPollFinalized(_id, approved);
@@ -51,7 +54,7 @@ contract WithdrawPollFacet is IWithdrawPoll, BasePoll, RolesView {
         public
         override
         view
-        returns (address)
+        returns (uint256)
     {
         return LibWithdrawPollStorage.wpStorageId(_id).beneficiary;
     }
@@ -62,7 +65,7 @@ contract WithdrawPollFacet is IWithdrawPoll, BasePoll, RolesView {
 
     function _withdrawPollVote(bool _agree) external override isWithdraw {
         vote(_agree);
-        emit WithdrawPollVoted( baseData().id, _msgSender(), _agree);
+        emit WithdrawPollVoted(baseData().id, _msgSender(), _agree);
     }
 
     function _withdrawPollRevokeVote() external override isWithdraw {

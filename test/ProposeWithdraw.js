@@ -47,13 +47,13 @@ describe("Test proposeWithdraw, storage/access", function () {
       solution.proposeWithdraw(parseEther("1"), await poolMember.getAddress())
     );
     const member = ev[0].args.member;
-    expect(member).to.eq(await poolMember.getAddress());
+    expect(member).to.eq(await solution.getMemberByAddress(await poolMember.getAddress()));
 
     withdrawTimestamp = (await ev[0].getBlock()).timestamp;
   });
   it("withdrawPoll storage", async function () {
     expect(await solution.getBeneficiary(1)).to.be.eq(
-      await poolMember.getAddress()
+      await solution.getMemberByAddress(await poolMember.getAddress())
     );
     expect(await solution.getAmount(1)).to.be.eq(parseEther("1"));
   });

@@ -3,7 +3,7 @@ pragma solidity ^0.7.4;
 
 library LibWithdrawPollStorage {
   struct WPStorage {
-      address beneficiary;
+      uint256 beneficiary;
       uint256 amount;
   }
 

@@ -56,13 +56,17 @@ describe("Test ClaimReward(for), storage/access", function () {
     ev = await events(solution.claimReward(1));
     const member = ev[0].args.member;
     const id = ev[0].args.id;
-    expect(member).to.be.eq(await owner.getAddress());
+    expect(member).to.be.eq(
+      await solution.getMemberByAddress(await owner.getAddress())
+    );
     expect(id).to.be.eq(2);
 
     withdrawTimestamp = (await ev[0].getBlock()).timestamp;
   });
   it("withdrawPoll storage", async function () {
-    expect(await solution.getBeneficiary(2)).to.be.eq(await owner.getAddress());
+    expect(await solution.getBeneficiary(2)).to.be.eq(
+      await solution.getMemberByAddress(await owner.getAddress())
+    );
     expect(await solution.getAmount(2)).to.be.eq(parseEther("5"));
   });
   it("basepoll storage", async function () {
@@ -150,9 +154,9 @@ describe("Test ClaimReward(for), flow", function () {
     })
   );
   it("Claim reward, no manager", async function () {
-    await expect(solution.connect(third).withdrawPollVote(withdrawId, true)).to.be.revertedWith(
-      "NO_MANAGER"
-    );
+    await expect(
+      solution.connect(third).withdrawPollVote(withdrawId, true)
+    ).to.be.revertedWith("NO_MANAGER");
   });
   it("Claim reward", async function () {
     solution.withdrawPollVote(withdrawId, true);
@@ -174,6 +178,22 @@ describe("Test ClaimReward(for), flow", function () {
     );
     expect(await token.balanceOf(await solution.address)).to.be.eq(
       parseEther("1000")
+    );
+  });
+  it("Claim reward, change address", async function () {
+    await solution.withdrawPollVote(withdrawId, true);
+    await ethers.provider.send("evm_increaseTime", [50]);
+    await solution.connect(voter).upgradeAddress(await third.getAddress())
+    await ethers.provider.send("evm_increaseTime", [200]);
+    await solution.withdrawPollFinalize(withdrawId);
+    expect(await token.balanceOf(await voter.getAddress())).to.be.eq(
+      parseEther("0")
+    );
+    expect(await token.balanceOf(await third.getAddress())).to.be.eq(
+      parseEther("5")
+    );
+    expect(await token.balanceOf(await solution.address)).to.be.eq(
+      parseEther("995")
     );
   });
 });

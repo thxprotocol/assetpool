@@ -4,7 +4,7 @@ pragma solidity ^0.7.4;
 pragma experimental ABIEncoderV2;
 
 interface IAssetPool {
-    event WithdrawPollCreated(uint256 id, address indexed member);
+    event WithdrawPollCreated(uint256 id, uint256 indexed member);
     event RewardPollCreated(
         uint256 id,
         address indexed member,

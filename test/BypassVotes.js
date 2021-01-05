@@ -131,7 +131,7 @@ describe("Bypass Votes", function () {
       expect(await solution.getTotalVoted(2)).to.be.eq(0);
 
       expect(await solution.getBeneficiary(2)).to.be.eq(
-        await voter.getAddress()
+        await solution.getMemberByAddress(await voter.getAddress())
       );
       expect(await solution.getAmount(2)).to.be.eq(parseEther("5"));
       expect(await solution.withdrawPollApprovalState(2)).to.be.eq(true);

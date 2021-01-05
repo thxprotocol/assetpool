@@ -7,7 +7,7 @@ interface IWithdrawPoll {
     event WithdrawPollFinalized(uint256 id, bool approved);
     event WithdrawPollRevokedVote(uint256 id, address indexed member);
 
-    function getBeneficiary(uint256 _id) external view returns (address);
+    function getBeneficiary(uint256 _id) external view returns (uint256);
 
     function getAmount(uint256 _id) external view returns (uint256);
 

@@ -7,6 +7,7 @@ import "../PollFacet/LibRewardPollStorage.sol";
 import "../PollFacet/LibWithdrawPollStorage.sol";
 import "../PollFacet/LibBasePollStorage.sol";
 import "../RolesFacet/RolesView.sol";
+import "../RolesFacet/LibAccessStorage.sol";
 import "../../interfaces/IAssetPool.sol";
 import "./LibAssetPoolStorage.sol";
 import "../GasStationFacet/RelayReceiver.sol";
@@ -208,9 +209,9 @@ contract AssetPoolFacet is IAssetPool, RolesView {
          = LibWithdrawPollStorage.wpStorageId(apst.pollCounter);
 
         wpStorage.amount = _amount;
-        wpStorage.beneficiary = _beneficiary;
+        wpStorage.beneficiary = LibAccessStorage.roleStorage().addressToMember[_beneficiary];
 
-        emit WithdrawPollCreated(apst.pollCounter, _beneficiary);
+        emit WithdrawPollCreated(apst.pollCounter, wpStorage.beneficiary);
         return baseStorage.id;
     }
 
