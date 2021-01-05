@@ -21,4 +21,16 @@ interface IRoles {
     function isMemberRoleAdmin(address _account) external view returns (bool);
 
     function getOwner() external view returns (address);
+
+    function upgradeAddress(address _newAddress) external;
+
+    function getAddressByMember(uint256 _member)
+        external
+        view
+        returns (address);
+
+    function getMemberByAddress(address _address)
+        external
+        view
+        returns (uint256);
 }

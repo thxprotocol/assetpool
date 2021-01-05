@@ -111,17 +111,20 @@ contract RolesFacet is IRoles, RolesView, AccessControl {
         rs.memberToAddress[rs.memberCounter] = _account;
     }
 
-    function upgradeAddress(address _newAddress) public {
+    function upgradeAddress(address _newAddress) external override {
         LibAccessStorage.RoleStorage storage rs = LibAccessStorage
             .roleStorage();
         uint256 member = rs.addressToMember[_msgSender()];
         require(member != 0, "NON_MEMBER");
+        rs.addressToMember[_msgSender()] = 0;
         rs.addressToMember[_newAddress] = member;
         rs.memberToAddress[member] = _newAddress;
+
     }
 
     function getAddressByMember(uint256 _member)
         external
+        override
         view
         returns (address)
     {
@@ -130,6 +133,7 @@ contract RolesFacet is IRoles, RolesView, AccessControl {
 
     function getMemberByAddress(address _address)
         external
+        override
         view
         returns (uint256)
     {

@@ -98,7 +98,7 @@ describe("Test Roles", function () {
     });
     it("addManager directly", async function () {
       const voterAddress = await voter.getAddress();
-      await solution.addMember(voterAddress)
+      await solution.addMember(voterAddress);
 
       await solution.grantRole(MANAGER_ROLE, voterAddress);
       expect(await solution.isMember(voterAddress)).to.eq(true);
@@ -110,7 +110,7 @@ describe("Test Roles", function () {
     });
     it("addAdmin directly", async function () {
       const voterAddress = await voter.getAddress();
-      await solution.addMember(voterAddress)
+      await solution.addMember(voterAddress);
 
       await solution.grantRole(ADMIN_ROLE, voterAddress);
       expect(await solution.isMember(voterAddress)).to.eq(true);
@@ -195,6 +195,88 @@ describe("Test Roles", function () {
       await expect(
         solution.revokeRole(MEMBER_ROLE, await voter.getAddress())
       ).to.be.revertedWith("AccessControl: sender must be an admin to revoke");
+    });
+  });
+
+  describe("Test member ids", function () {
+    beforeEach(async function () {
+      await _beforeDeployment;
+      ev = await events(
+        assetPoolFactory.deployAssetPool(
+          await owner.getAddress(),
+          await owner.getAddress(),
+          token.address
+        )
+      );
+      diamond = ev[ev.length - 1].args.assetPool;
+      solution = await ethers.getContractAt("ISolution", diamond);
+    });
+    it("addMember", async function () {
+      const voterAddress = await voter.getAddress();
+      let member = await solution.getMemberByAddress(voterAddress);
+      expect(member).to.eq(0);
+      expect(await solution.getAddressByMember(member)).to.eq(
+        constants.AddressZero
+      );
+
+      await solution.addMember(voterAddress);
+
+      member = await solution.getMemberByAddress(voterAddress);
+      expect(member).to.gt(1000);
+      expect(await solution.getAddressByMember(member)).to.eq(voterAddress);
+    });
+    it("grantRole", async function () {
+      const voterAddress = await voter.getAddress();
+      await expect(
+        solution.grantRole(MEMBER_ROLE, voterAddress)
+      ).to.be.revertedWith("NOT_SETUP");
+    });
+    it("revokeRole", async function () {
+      const voterAddress = await voter.getAddress();
+      await expect(
+        solution.revokeRole(MEMBER_ROLE, voterAddress)
+      ).to.be.revertedWith("NOT_SETUP");
+    });
+    it("renounceRole", async function () {
+      await expect(
+        solution
+          .connect(voter)
+          .renounceRole(MEMBER_ROLE, await voter.getAddress())
+      ).to.be.revertedWith("NOT_SETUP");
+    });
+    it("member id stays the same after removing", async function () {
+      const voterAddress = await voter.getAddress();
+      await solution.addMember(await voter.getAddress());
+      const member = await solution.getMemberByAddress(voterAddress);
+
+      await solution.addManager(await voter.getAddress());
+      expect(await solution.getMemberByAddress(voterAddress)).to.eq(member);
+
+      await solution.removeManager(await voter.getAddress());
+      expect(await solution.getMemberByAddress(voterAddress)).to.eq(member);
+
+      await solution.removeMember(await voter.getAddress());
+      expect(await solution.getMemberByAddress(voterAddress)).to.eq(member);
+
+      // add again
+      await solution.addManager(await voter.getAddress());
+      expect(await solution.getMemberByAddress(voterAddress)).to.eq(member);
+    });
+    it("upgrade address", async function () {
+      const voterAddress = await voter.getAddress();
+      await solution.addMember(await voter.getAddress());
+      const member = await solution.getMemberByAddress(voterAddress);
+      await solution.connect(voter).upgradeAddress(await other.getAddress());
+
+      expect(await solution.getMemberByAddress(await other.getAddress())).to.eq(
+        member
+      );
+      expect(await solution.getAddressByMember(member)).to.eq(
+        await other.getAddress()
+      );
+
+      const oldMember = await solution.getMemberByAddress(voterAddress);
+      expect(oldMember).to.eq(0);
     });
   });
 });
