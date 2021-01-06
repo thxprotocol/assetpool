@@ -2,15 +2,20 @@
 pragma solidity ^0.7.1;
 pragma experimental ABIEncoderV2;
 
-import "diamond-2/contracts/Diamond.sol";
+import "../RelayDiamond.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "diamond-2/contracts/interfaces/IDiamondCut.sol";
 
-import "../interfaces/IAssetPoolFacet.sol";
+import "../interfaces/ISolution.sol";
 
 contract AssetPoolFactory is Ownable {
 
     event AssetPoolDeployed(address assetPool);
     address public defaultController;
+
+    address[] public assetPools;
+    mapping(address => bool) public isAssetPool;
+
     IDiamondCut.FacetCut[] public defaultCut;
 
     constructor(IDiamondCut.FacetCut[] memory _facets) {
@@ -24,22 +29,19 @@ contract AssetPoolFactory is Ownable {
         defaultController = _controller;
     }
 
-    function removeFacet(uint256 _index) external onlyOwner {
-        defaultCut[_index] = defaultCut[defaultCut.length - 1];
-        defaultCut.pop();
-    }
-
-    function addFacet(IDiamondCut.FacetCut memory _facet) external onlyOwner {
-        defaultCut.push(_facet);
-    }
-
-    function deployAssetPool(address api) external {
-        Diamond d = new Diamond(defaultCut, address(this));
-        IAssetPoolFacet assetPool = IAssetPoolFacet(address(d));
+    function deployAssetPool(address _api, address _owner, address _token) external onlyOwner {
+        // direct is required for the initialize functions below
+        RelayDiamond d = new RelayDiamond(defaultCut, address(this));
+        ISolution assetPool = ISolution(address(d));
 
         // initialize gasstation
-        assetPool.initialize(api);
+        assetPool.initializeGasStation(_api);
+        assetPool.initializeAssetPool(_token);
+        assetPool.initializeRoles(_owner);
         assetPool.transferOwnership(defaultController);
+
+        assetPools.push(address(d));
+        isAssetPool[address(d)] = true;
         emit AssetPoolDeployed(address(d));
     }
 }

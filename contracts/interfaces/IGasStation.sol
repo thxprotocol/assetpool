@@ -4,9 +4,9 @@ pragma solidity ^0.7.4;
 interface IGasStation {
     event Result(bool success, bytes data);
 
-    function initialize(address _admin) external;
+    function initializeGasStation(address _admin) external;
 
-    function getAdmin() external view returns (address);
+    function getGasStationAdmin() external view returns (address);
 
     function getLatestNonce(address _signer) external view returns (uint256);
 
@@ -15,4 +15,6 @@ interface IGasStation {
         uint256 _nonce,
         bytes memory _sig
     ) external;
+
+    function setSigning(bool _enabled) external;
 }
