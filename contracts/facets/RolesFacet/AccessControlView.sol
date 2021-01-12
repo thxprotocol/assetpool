@@ -57,7 +57,9 @@ abstract contract AccessControlView is RelayReceiver {
         view
         returns (bool)
     {
-        require(_member != 0, "NOT_SETUP");
+        if (_member == 0) {
+            return false;
+        }
         return
             LibAccessStorage.roleStorage().roles[role].members.contains(
                 _member

@@ -211,6 +211,9 @@ describe("Test Roles", function () {
       diamond = ev[ev.length - 1].args.assetPool;
       solution = await ethers.getContractAt("ISolution", diamond);
     });
+    it("getMember", async function () {
+      expect(await solution.isMember(await voter.getAddress())).to.eq(false);
+    });
     it("addMember", async function () {
       const voterAddress = await voter.getAddress();
       let member = await solution.getMemberByAddress(voterAddress);
