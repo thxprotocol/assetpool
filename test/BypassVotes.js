@@ -41,7 +41,7 @@ describe("Bypass Votes", function () {
         )
       );
       diamond = ev[ev.length - 1].args.assetPool;
-
+      
       solution = await ethers.getContractAt("ISolution", diamond);
       //await solution.addManager(voter.getAddress());
       // await token.transfer(solution.address, parseEther("1000"));
