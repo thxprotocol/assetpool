@@ -3,7 +3,7 @@ pragma solidity ^0.7.4;
 
 library LibGasStationStorage {
   bytes32 constant GASSTATION_STORAGE_POSITION = keccak256(
-    "diamond.standard.gasstation.storage"
+    "test4-diamond.standard.gasstation.storage"
   );
 
   struct GSStorage {

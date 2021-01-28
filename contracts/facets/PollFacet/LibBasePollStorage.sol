@@ -20,7 +20,7 @@ library LibBasePollStorage {
 
   function getPosition(uint256 _id) internal pure returns (bytes32) {
         return
-            keccak256(abi.encode("diamond.contract.assetpool.basepoll", _id));
+            keccak256(abi.encode("test4-diamond.contract.assetpool.basepoll", _id));
     }
 
   function basePollStorage(bytes32 _pos) internal pure returns (BasePollStorage storage bs) {

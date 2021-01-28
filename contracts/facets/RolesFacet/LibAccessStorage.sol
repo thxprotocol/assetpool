@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 
 library LibAccessStorage {
     bytes32 constant ACCESS_STORAGE_POSITION = keccak256(
-        "diamond.standard.access.storage"
+        "test4-diamond.standard.access.storage"
     );
 
     struct RoleStorage {

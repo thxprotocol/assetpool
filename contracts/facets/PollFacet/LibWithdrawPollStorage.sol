@@ -8,7 +8,7 @@ library LibWithdrawPollStorage {
   }
 
   function getPosition(uint256 _id) internal pure returns (bytes32) {
-        return keccak256(abi.encode("diamond.contract.assetpool.withdrawdpoll", _id));
+        return keccak256(abi.encode("test4-diamond.contract.assetpool.withdrawdpoll", _id));
     }
 
   function wpStorage(bytes32 _pos) internal pure returns (WPStorage storage bs) {

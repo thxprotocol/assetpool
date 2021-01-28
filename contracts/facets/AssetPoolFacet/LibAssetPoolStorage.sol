@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 
 library LibAssetPoolStorage {
     bytes32 constant GASSTATION_STORAGE_POSITION = keccak256(
-        "diamond.standard.assetpool.storage"
+        "test4-diamond.standard.assetpool.storage"
     );
 
     struct APstorage {

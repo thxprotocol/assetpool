@@ -30,6 +30,42 @@ describe("Bypass Votes", function () {
       assetPoolFactory = await deployBasics();
     })
   );
+  describe.only("Diff", async function () {
+    before(async function () {
+      await _beforeDeployment;
+      ev = await events(
+        assetPoolFactory.deployAssetPool(
+          await owner.getAddress(),
+          await owner.getAddress(),
+          token.address
+        )
+      );
+      diamond = ev[ev.length - 1].args.assetPool;
+
+      solution = await ethers.getContractAt("ISolution", diamond);
+      //await solution.addManager(voter.getAddress());
+      // await token.transfer(solution.address, parseEther("1000"));
+
+      await solution.setSigning(true);
+      //await solution.setProposeWithdrawPollDuration(0);
+      //await solution.setRewardPollDuration(0);
+    });
+    it("Add reward", async function () {
+      rewardTimestamp = await timestamp(
+        solution.addReward(parseEther("5"), 180)
+      );
+      rw = await solution.getReward(1);
+      console.log(rw.withdrawAmount.toString());
+    });
+    it("Update polls", async function () {
+      await updateToBypassPolls(solution);
+    });
+    it("Finalize reward", async function () {
+      await solution.rewardPollFinalize(1);
+      rw = await solution.getReward(1);
+      console.log(rw.withdrawAmount.toString());
+    });
+  });
   describe("Reward", async function () {
     before(async function () {
       await _beforeDeployment;

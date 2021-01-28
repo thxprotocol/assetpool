@@ -20,4 +20,27 @@ task("accounts", "Prints the list of accounts", async () => {
  */
 module.exports = {
   solidity: "0.7.4",
+  networks: {
+    fork: {
+      url: "http://127.0.0.1:8545/",
+      accounts: [
+        "",
+      ],
+      gas: 6e6,
+      gasPrice: 1000000000,
+    },
+    mumbai: {
+      url:
+        "",
+      accounts: [
+        "",
+      ],
+      gas: 6e6,
+      gasPrice: 1000000000,
+      timeout: 300000000,
+    },
+  },
+  mocha: {
+    timeout: 300000000,
+  },
 };

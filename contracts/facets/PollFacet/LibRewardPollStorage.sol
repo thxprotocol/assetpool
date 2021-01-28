@@ -10,7 +10,7 @@ library LibRewardPollStorage {
 
   function getPosition(uint256 _id) internal pure returns (bytes32) {
         return
-            keccak256(abi.encode("diamond.contract.assetpool.rewardpoll", _id));
+            keccak256(abi.encode("test4-diamond.contract.assetpool.rewardpoll", _id));
     }
 
   function rpStorage(bytes32 _pos) internal pure returns (RPStorage storage bs) {
